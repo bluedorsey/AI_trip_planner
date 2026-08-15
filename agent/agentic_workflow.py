@@ -3,11 +3,13 @@ from langgraph.graph import StateGraph,MessagesState,END,START
 from langgraph.prebuilt import ToolNode, tools_condition
 from prompt_builder.prompt import SYSTEM_PROMPT
 
-class AgenticWorkflow:
-    def __init__(self):
+class GraphBuilder:
+    def __init__(self, model_provider: str = "google"):
+        self.model_provider = model_provider
+        self.model_loader = load_model(model_provider=self.model_provider)
         self.system_prompt = SYSTEM_PROMPT
 
-        
+
     def agentic_fuction(self,state: MessagesState):
         user_input =  state['user_input']
         input_question = user_input + [self.system_prompt]
