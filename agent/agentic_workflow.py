@@ -8,6 +8,27 @@ class GraphBuilder:
         self.model_provider = model_provider
         self.model_loader = load_model(model_provider=self.model_provider)
         self.system_prompt = SYSTEM_PROMPT
+        self.tools = []
+        # Weather tool 
+        self.wheather_tool = WeatherInfoTool()
+        # PlaceSearch tool
+        self.place_search_tool = PlaceSearchTool()
+
+        # CalculateCost tool
+        self.calculate_cost_tool = CalculateCostTool()
+        # CurrencyConverter tool
+        self.currency_converter_tool = CurrencyConverterTool()
+
+        self.tools.extend([*self.wheather_tool.weather_tool_list,
+                            *self.place_search_tool.place_search_tool_list,
+                            *self.calculate_cost_tool.calculate_cost_tool_list,
+                            *self.currency_converter_tool.currency_converter_tool_list])
+        self.llm_with_tools = self.llm.bind_tools(self.tools)
+        self.graph = None
+
+
+
+
 
 
     def agentic_fuction(self,state: MessagesState):

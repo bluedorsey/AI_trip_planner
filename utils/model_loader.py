@@ -29,7 +29,7 @@ class ModelLoader(BaseModel):
             print('Loading google gemini model')
             gemini_api_key = os.getenv("GEMINI_API_KEY")
             model_name = self.config["llm"]["gemini"]["model"]
-            llm = ChatGoogleGenerativeAI(google_api_key=gemini_api_key, model_name=model_name)
+            llm = ChatGoogleGenerativeAI(model=model_name, api_key=gemini_api_key)
         elif self.model_provider == "groq":
             print('Loading groq model')
             groq_api_key = os.getenv("GROQ_API_KEY")
