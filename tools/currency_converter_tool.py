@@ -20,3 +20,4 @@ class CurrencyConverterTool:
             converter = CurrencyConverter(self.api_key)
             result = converter.convert(from_curr, to_curr, value)
             return f"{value} {from_curr} = {result} {to_curr}"
+        return [currency_converter]
