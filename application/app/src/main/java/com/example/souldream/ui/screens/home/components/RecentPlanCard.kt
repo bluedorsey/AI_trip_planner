@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,7 +31,10 @@ import com.example.souldream.R
 import com.example.souldream.model.RecentPlan
 import com.example.souldream.ui.animation.pressScale
 import com.example.souldream.ui.components.AppImage
-import com.example.souldream.ui.components.ShimmerBox
+import com.example.souldream.ui.components.SkeletonBlock
+import com.example.souldream.ui.components.SkeletonCircle
+import com.example.souldream.ui.components.SkeletonLine
+import com.example.souldream.ui.components.skeletonSemantics
 import com.example.souldream.ui.theme.GlassWhite
 import com.example.souldream.ui.theme.radio_button_colour
 
@@ -116,17 +118,18 @@ fun RecentPlanCardSkeleton(modifier: Modifier = Modifier) {
             .fillMaxWidth()
             .clip(CardShape)
             .background(GlassWhite)
-            .padding(12.dp),
+            .padding(12.dp)
+            .skeletonSemantics(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ShimmerBox(Modifier.size(ThumbSize), ThumbShape)
+        SkeletonBlock(Modifier.size(ThumbSize), ThumbShape)
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            ShimmerBox(Modifier.fillMaxWidth(0.6f).height(18.dp), CircleShape)
-            ShimmerBox(Modifier.fillMaxWidth(0.8f).height(14.dp), CircleShape)
-            ShimmerBox(Modifier.fillMaxWidth(0.5f).height(14.dp), CircleShape)
+            SkeletonLine(height = 18.dp, widthFraction = 0.6f)
+            SkeletonLine(height = 14.dp, widthFraction = 0.8f)
+            SkeletonLine(height = 14.dp, widthFraction = 0.5f)
         }
         Spacer(Modifier.width(8.dp))
-        ShimmerBox(Modifier.size(40.dp), CircleShape)
+        SkeletonCircle(40.dp)
     }
 }

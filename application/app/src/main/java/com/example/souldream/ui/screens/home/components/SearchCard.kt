@@ -51,7 +51,8 @@ import com.example.souldream.model.TripCategory
 import com.example.souldream.ui.animation.pulse
 import com.example.souldream.ui.animation.pressScale
 import com.example.souldream.ui.animation.staggeredEntrance
-import com.example.souldream.ui.components.ShimmerBox
+import com.example.souldream.ui.components.SkeletonLine
+import com.example.souldream.ui.components.skeletonSemantics
 import com.example.souldream.ui.components.asyncItems
 import com.example.souldream.ui.state.Async
 import com.example.souldream.ui.theme.GlassWhiteStrong
@@ -154,7 +155,7 @@ fun SearchCard(
                 skeletonCount = 4,
                 key = { it.id },
                 skeleton = {
-                    ShimmerBox(Modifier.size(width = 112.dp, height = 42.dp), CircleShape)
+                    SkeletonLine(Modifier.width(112.dp).skeletonSemantics(), height = 42.dp)
                 },
             ) { index, category ->
                 CategoryChip(

@@ -24,7 +24,8 @@ import androidx.compose.ui.unit.dp
 import com.example.souldream.model.Destination
 import com.example.souldream.ui.animation.pressScale
 import com.example.souldream.ui.components.AppImage
-import com.example.souldream.ui.components.ShimmerBox
+import com.example.souldream.ui.components.SkeletonBlock
+import com.example.souldream.ui.components.skeletonSemantics
 
 private val CardWidth = 128.dp
 private val CardHeight = 138.dp
@@ -88,5 +89,5 @@ fun DestinationCard(
 
 @Composable
 fun DestinationCardSkeleton(modifier: Modifier = Modifier) {
-    ShimmerBox(modifier.size(CardWidth, CardHeight), CardShape)
+    SkeletonBlock(modifier.size(CardWidth, CardHeight).skeletonSemantics(), CardShape)
 }
