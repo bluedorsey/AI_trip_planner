@@ -9,9 +9,8 @@ from app.prompt_builder.prompt import SYSTEM_PROMPT
 from app.utils.model_loader import load_model
 
 class GraphBuilder:
-    def __init__(self, model_provider: str = "google"):
-        self.model_provider = model_provider
-        self.llm = load_model(model_provider=self.model_provider)
+    def __init__(self):
+        self.llm = load_model()
         self.system_prompt = SYSTEM_PROMPT
         self.tools = []
         

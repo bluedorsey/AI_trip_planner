@@ -1,8 +1,9 @@
 llm:
-  gemini:
-    provider: "google"
-    model: "gemini-2.5-flash"
-
-  groq:
-    provider: "groq"
-    model: "llama-3.3-70b-versatile"
+  # Tried in order. If a model errors (quota/rate limit/outage) the next one is used.
+  # Add a line per model; providers: google (GEMINI_API_KEY), groq (GROQ_API_KEY).
+  # Quotas are per model, so several models of one provider also work as fallbacks.
+  models:
+    - {provider: google, model: gemini-2.5-flash}
+    - {provider: groq, model: openai/gpt-oss-120b}
+    - {provider: groq, model: openai/gpt-oss-20b}
+    - {provider: groq, model: qwen/qwen3.8-27b}  # last: flaky tool calls
