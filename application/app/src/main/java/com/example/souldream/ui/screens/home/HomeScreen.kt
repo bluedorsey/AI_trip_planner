@@ -39,7 +39,7 @@ import com.example.souldream.ui.screens.home.components.HomeTopBar
 import com.example.souldream.ui.screens.home.components.RecentPlanCard
 import com.example.souldream.ui.screens.home.components.RecentPlanCardSkeleton
 import com.example.souldream.ui.screens.home.components.SearchCard
-import com.example.souldream.ui.theme.MyApplicationTheme
+import com.example.souldream.ui.theme.SouldreamTheme
 import com.example.souldream.ui.theme.background_colour
 
 private val ScreenPadding = 20.dp
@@ -182,7 +182,7 @@ fun HomeScreen(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun HomeScreenPlaceholderPreview() {
-    MyApplicationTheme(darkTheme = false, dynamicColor = false) {
+    SouldreamTheme(darkTheme = false, dynamicColor = false) {
         HomeScreen(state = HomeUiState(), actions = HomeActions())
     }
 }

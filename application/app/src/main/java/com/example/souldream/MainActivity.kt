@@ -7,7 +7,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.souldream.navigation.AppNavHost
-import com.example.souldream.ui.theme.MyApplicationTheme
+import com.example.souldream.ui.theme.SouldreamTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             // No data layer yet: AppNavHost's default UI states are all "loading",
             // so both screens render their shimmer placeholders.
-            MyApplicationTheme(darkTheme = false, dynamicColor = false) {
+            SouldreamTheme(darkTheme = false, dynamicColor = false) {
                 AppNavHost()
             }
         }

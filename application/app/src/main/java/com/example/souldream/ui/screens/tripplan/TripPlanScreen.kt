@@ -54,7 +54,7 @@ import com.example.souldream.ui.screens.tripplan.components.TripTopBar
 import com.example.souldream.ui.state.Async
 import com.example.souldream.ui.state.dataOrNull
 import com.example.souldream.ui.state.map
-import com.example.souldream.ui.theme.MyApplicationTheme
+import com.example.souldream.ui.theme.SouldreamTheme
 import com.example.souldream.ui.theme.background_colour
 
 private val ScreenPadding = 20.dp
@@ -229,7 +229,7 @@ private fun ItineraryContent(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun TripPlanScreenPlaceholderPreview() {
-    MyApplicationTheme(darkTheme = false, dynamicColor = false) {
+    SouldreamTheme(darkTheme = false, dynamicColor = false) {
         TripPlanScreen(state = TripPlanUiState(), actions = TripPlanActions())
     }
 }
