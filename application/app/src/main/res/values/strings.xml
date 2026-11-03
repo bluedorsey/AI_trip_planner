@@ -11,6 +11,7 @@
 
     <!-- Shared -->
     <string name="action_see_all">See all</string>
+    <string name="loading">Loading</string>
     <string name="section_error">Something went wrong. Please try again.</string>
 
     <!-- Bottom navigation -->
