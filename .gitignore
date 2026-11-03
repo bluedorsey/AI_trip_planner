@@ -15,4 +15,8 @@ env/
 !.env.example
 .claude
 
+#apps
 keystore/
+application/app/google-services.json
+application/.kotlin
+application/.idea
