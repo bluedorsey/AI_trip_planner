@@ -10,6 +10,10 @@ app = FastAPI()
 class QueryRequest(BaseModel):
     query: str
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
 @app.post("/query")
 async def query_endpoint(query: QueryRequest, user: dict = Depends(current_user)):
     try : 
