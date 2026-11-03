@@ -1,0 +1,13 @@
+application
+.venv
+env
+.claude
+.vscode
+__pycache__
+*.egg-info
+.env
+.env.*
+test_serp_parse.py
+uv.lock
+pyproject.toml
+setup.py

@@ -3,7 +3,6 @@ langchain-community
 langchain-experimental
 fastapi
 python-dotenv
-streamlit
 uvicorn
 pydantic
 httpx
@@ -16,6 +15,4 @@ langchain-google-genai
 langgraph
 langchain-google-community[places]
 serpapi
-
-
--e .
+firebase-admin

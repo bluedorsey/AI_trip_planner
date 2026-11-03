@@ -20,3 +20,5 @@ keystore/
 application/app/google-services.json
 application/.kotlin
 application/.idea
+.vercel
+.env*

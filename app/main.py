@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from app.agent.agentic_workflow import GraphBuilder
+from app.auth import current_user
 
 
 app = FastAPI()
@@ -10,7 +11,7 @@ class QueryRequest(BaseModel):
     query: str
 
 @app.post("/query")
-async def query_endpoint(query: QueryRequest):
+async def query_endpoint(query: QueryRequest, user: dict = Depends(current_user)):
     try : 
         graph = GraphBuilder(model_provider="google")
         output = graph().invoke({"messages": [("user", query.query)]})
