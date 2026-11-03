@@ -1,38 +1,38 @@
 
-from langchain_groq import ChatGroq
-from langchain_google_genai import ChatGoogleGenerativeAI
-from pydantic import BaseModel, Field
-from typing import Any, Optional,Literal
-from utils.config_loader import load_config
-from dotenv import load_dotenv
 import os
+from typing import Literal
+
+from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
+
+from utils.config_loader import load_config
+
+load_dotenv()
 
 
-class Config_loader:
-    def __init__(self):
+class ModelLoader:
+    def __init__(self, model_provider: Literal["google", "groq"]):
+        self.model_provider = model_provider
         self.config = load_config()
-    def __getitem__(self, key):
-        return self.config[key]
-
-class ModelLoader(BaseModel):
-    model_provider : Literal["google","groq"]
-    config: Optional[Config_loader] = Field(default=None, exclude=True)
-    def model_post_init(self,__context:Any) -> None:
-        self.model = Config_loader()
-
-    class Config:
-        arbitrary_types_allowed = True
 
     def load_llm(self):
-        print('LLm loading')
         if self.model_provider == "google":
-            print('Loading google gemini model')
             gemini_api_key = os.getenv("GEMINI_API_KEY")
+            if not gemini_api_key:
+                raise RuntimeError("GEMINI_API_KEY is required for the Google model")
             model_name = self.config["llm"]["gemini"]["model"]
-            llm = ChatGoogleGenerativeAI(model=model_name, api_key=gemini_api_key)
-        elif self.model_provider == "groq":
-            print('Loading groq model')
+            return ChatGoogleGenerativeAI(model=model_name, api_key=gemini_api_key)
+
+        if self.model_provider == "groq":
             groq_api_key = os.getenv("GROQ_API_KEY")
+            if not groq_api_key:
+                raise RuntimeError("GROQ_API_KEY is required for the Groq model")
             model_name = self.config["llm"]["groq"]["model"]
-            llm = ChatGroq(groq_api_key=groq_api_key, model_name=model_name)
-        return llm
+            return ChatGroq(api_key=groq_api_key, model=model_name)
+
+        raise ValueError(f"Unsupported model provider: {self.model_provider}")
+
+
+def load_model(model_provider: Literal["google", "groq"] = "google"):
+    return ModelLoader(model_provider).load_llm()

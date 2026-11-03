@@ -8,7 +8,7 @@ from utils.weather_info import WeatherInfo
 class WeatherInfoTool:
 
     def __init__(self):
-        self.api_key = os.getenv("OPENWEATHER_API_KEY")
+        self.api_key = os.getenv("WEATHERMAP_API_KEY")
         self.weather_service = WeatherInfo(self.api_key)
         self.weather_tools_list = self.setup_tools()
 

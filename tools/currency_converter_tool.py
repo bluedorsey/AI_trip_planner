@@ -5,7 +5,7 @@ from utils.currency_converter import CurrencyConverter
 
 class CurrencyConverterTool:
     def __init__(self):
-        self.api_key = os.getenv("CURRENCY_CONVERTER_API_KEY")
+        self.api_key = os.getenv("EXCHANGE_RATE_KEY")
     def setup_tools(self):
 
         @tool("currency_converter")
@@ -18,6 +18,6 @@ class CurrencyConverterTool:
                 to_curr (str): The currency code to convert to (e.g., 'EUR').
                 value (float): The amount of money to convert."""
             converter = CurrencyConverter(self.api_key)
-            result = converter.convert(from_curr, to_curr, value)
+            result = converter.convert(value, from_curr, to_curr)
             return f"{value} {from_curr} = {result} {to_curr}"
         return [currency_converter]

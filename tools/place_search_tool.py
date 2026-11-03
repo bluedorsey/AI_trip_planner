@@ -1,15 +1,17 @@
 from typing import List
 from langchain.tools import tool
-from utils.place_into_search import TavilySearch, GooglePlacesTool
+from utils.place_into_search import tavily_search_tool, GooglePlacesSearchTool , SerpAPI_tool
 import os
 from dotenv import load_dotenv
 
 class PlaceSearchTool:
-    def __init__(self, api_key):
+    def __init__(self):
         self.api_key = os.getenv("GPLACE_KEY_API")
         self.tavily_api_key = os.getenv("TVAILAY_API_KEY")
-        self.tavily_search = TavilySearch(self.tavily_api_key)
-        self.google_places_tool = GooglePlacesTool(self.api_key)
+        self.serp_api_key = os.getenv("SERP_API_KEY")
+        self.tavily_search = tavily_search_tool(self.tavily_api_key)
+        self.google_places_tool = GooglePlacesSearchTool(self.api_key)
+        self.serpapi_search = SerpAPI_tool(self.serp_api_key)
         self.tools_list = self._set_up_tools()
 
     def _set_up_tools(self)->List:
@@ -24,11 +26,11 @@ class PlaceSearchTool:
                 dict: A dictionary containing information about the attractive places.
             """
             try:
-                attraction_result = self.google_places_tool.attraction_places(place)
+                attraction_result = self.serpapi_search.serp_attraction_place(place)
                 if attraction_result:# google place search 
                     return f"Following are the attractions of {place} as suggested by google: {attraction_result}"
             except :#fallback to tavily search if google places fails
-                attraction_result = self.tavily_search.attaraction_places(place)
+                attraction_result = self.tavily_search.tavily_attraction_place(place)
                 return f"Following are the attractions of {place} as suggested by tavily: {attraction_result}"
 
         @tool
@@ -41,11 +43,11 @@ class PlaceSearchTool:
                 dict: A dictionary containing information about the Resturant. 
             """
             try:
-                resturant_result = self.google_places_tool.restaurant_place(place)
+                resturant_result = self.serpapi_search.serp_restaurant_place(place)
                 if resturant_result:
                     return f"Following are the best resturant with higher ratings 3.8+ of {place} suggested by google: {resturant_result}"
             except:
-                resturant_result = self.tavily_search.restaurant_place(place)
+                resturant_result = self.tavily_search.tavily_restaurant_place(place)
                 return f"Following are the best resturant with higher ratings 3.8+ of {place} suggested by tavily: {resturant_result}"
 
         @tool
@@ -58,11 +60,11 @@ class PlaceSearchTool:
                 dict: A dictionary containing information about the street food options .
             """
             try:
-                street_food_result = self.google_places_tool.street_food_options(place)
+                street_food_result = self.serpapi_search.serp_street_food_place(place)
                 if street_food_result:
                     return f"Following are the best street food options in {place} suggested by google: {street_food_result}"
             except:
-                street_food_result = self.tavily_search.street_food_options(place)
+                street_food_result = self.tavily_search.tavily_street_food_place(place)
                 return f"Following are the best street food options in {place} suggested by tavily: {street_food_result}"
 
         @tool
@@ -75,11 +77,11 @@ class PlaceSearchTool:
                 dict: A dictionary containing information about the hotel options .
             """
             try:
-                hotel_result = self.google_places_tool.hotel_place(place)
+                hotel_result = self.serpapi_search.serp_hotel_place(place)
                 if hotel_result:
                     return f"Following are the best hotel options in {place} suggested by google: {hotel_result}"
             except:
-                hotel_result = self.tavily_search.hotel_place(place)
+                hotel_result = self.tavily_search.tavily_hotel_place(place)
                 return f"Following are the best hotel options in {place} suggested by tavily: {hotel_result}"
 
         @tool
@@ -92,11 +94,11 @@ class PlaceSearchTool:
                     dict: A dictionary containing information about the activity options .
                 """
                 try:
-                    activity_result = self.google_places_tool.activity_place(place)
+                    activity_result = self.serpapi_search.serp_activity_place(place)
                     if activity_result:
                         return f"Following are the best activity options in {place} suggested by google: {activity_result}"
                 except:
-                    activity_result = self.tavily_search.activity_place(place)
+                    activity_result = self.tavily_search.tavily_activity_place(place)
                     return f"Following are the best activity options in {place} suggested by tavily: {activity_result}"
         return [attraction_places_tool, resturant_place_tool, street_food_tool, Hotel_place_tool, activity_place_tool]
         
