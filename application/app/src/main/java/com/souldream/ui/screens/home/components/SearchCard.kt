@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -39,9 +38,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -89,10 +90,21 @@ fun SearchCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(elevation, shape, ambientColor = selected_icon, spotColor = selected_icon)
+            .graphicsLayer {
+                shadowElevation = elevation.toPx()
+                this.shape = shape
+                ambientShadowColor = selected_icon
+                spotShadowColor = selected_icon
+            }
             .clip(shape)
             .background(GlassWhiteStrong)
-            .border(1.5.dp, borderColor, shape)
+            .drawBehind {
+                drawRoundRect(
+                    color = borderColor,
+                    cornerRadius = CornerRadius(32.dp.toPx()),
+                    style = Stroke(1.5.dp.toPx()),
+                )
+            }
             .padding(top = 12.dp, bottom = 14.dp),
     ) {
         Row(

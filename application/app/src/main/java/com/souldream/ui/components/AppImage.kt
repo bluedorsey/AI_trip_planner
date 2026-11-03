@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BrokenImage
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,8 +50,11 @@ fun AppImage(
         label = "imageAlpha",
     )
 
+    // Only flips once per fade, so the per-frame alpha never triggers recomposition.
+    val fading by remember { derivedStateOf { imageAlpha < 1f } }
+
     Box(modifier) {
-        if (showPlaceholder && imageAlpha < 1f) {
+        if (showPlaceholder && fading) {
             if (status == ImageStatus.Error) {
                 Box(
                     modifier = Modifier.fillMaxSize().background(ShimmerBase),

@@ -2,6 +2,7 @@ package com.souldream
 
 import android.graphics.Color
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -18,6 +19,7 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
         )
+        requestHighestRefreshRate()
         setContent {
             // No data layer yet: AppNavHost's default UI states are all "loading",
             // so both screens render their shimmer placeholders.
@@ -25,5 +27,19 @@ class MainActivity : ComponentActivity() {
                 AppNavHost()
             }
         }
+    }
+
+    /**
+     * Many OEMs keep third-party apps at 60 Hz unless they ask for more. Pick the fastest
+     * display mode at the current resolution (120/144/165 Hz...), so the switch is seamless.
+     */
+    @Suppress("DEPRECATION")
+    private fun requestHighestRefreshRate() {
+        val display = windowManager.defaultDisplay
+        val current = display.mode
+        val best = display.supportedModes
+            .filter { it.physicalWidth == current.physicalWidth && it.physicalHeight == current.physicalHeight }
+            .maxByOrNull { it.refreshRate } ?: return
+        window.attributes = window.attributes.apply { preferredDisplayModeId = best.modeId }
     }
 }

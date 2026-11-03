@@ -3,7 +3,6 @@ package com.souldream.ui.components
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -92,8 +91,9 @@ private fun BottomNavEntry(
         animationSpec = spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessLow),
         label = "navIconScale",
     )
-    val indicatorWidth by animateDpAsState(
-        targetValue = if (selected) 22.dp else 0.dp,
+    // Scaled in the layer (not resized) so the spring never re-runs layout.
+    val indicatorScale by animateFloatAsState(
+        targetValue = if (selected) 1f else 0f,
         animationSpec = spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow),
         label = "navIndicator",
     )
@@ -105,7 +105,8 @@ private fun BottomNavEntry(
         Box(
             Modifier
                 .align(Alignment.TopCenter)
-                .size(width = indicatorWidth, height = 3.dp)
+                .size(width = 22.dp, height = 3.dp)
+                .graphicsLayer { scaleX = indicatorScale }
                 .clip(CircleShape)
                 .background(selected_icon),
         )
