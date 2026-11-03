@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.souldream"
+    namespace = "com.souldream"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.souldream"
+        applicationId = "com.souldream"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
