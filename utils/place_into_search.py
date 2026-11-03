@@ -1,4 +1,5 @@
 import html
+from functools import cached_property
 
 import serpapi
 from langchain_tavily import TavilySearch
@@ -7,8 +8,11 @@ from langchain_google_community import GooglePlacesTool , GooglePlacesAPIWrapper
 class GooglePlacesSearchTool:
     def __init__(self, api_key):
         self.api_key = api_key
-        self.google_places_api_wrapper = GooglePlacesAPIWrapper(gplaces_api_key=self.api_key)
-        self.google_places_tool = GooglePlacesTool(api_wrapper=self.google_places_api_wrapper)
+
+    @cached_property
+    def google_places_tool(self):
+        # built on first use so a missing key doesn't break app startup
+        return GooglePlacesTool(api_wrapper=GooglePlacesAPIWrapper(gplaces_api_key=self.api_key))
         
 # atrraction , resturant , street_food , activity , hotel , transport
     def attraction_place(self, Place :str)-> dict:
