@@ -1,3 +1,53 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">TripPlanner</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_back">Back</string>
+    <string name="cd_share">Share trip</string>
+    <string name="cd_more">More options</string>
+    <string name="cd_profile">Profile</string>
+    <string name="cd_plan_trip">Plan trip</string>
+    <string name="cd_open_plan">Open plan</string>
+
+    <!-- Shared -->
+    <string name="action_see_all">See all</string>
+    <string name="section_error">Something went wrong. Please try again.</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_saved">Saved</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home -->
+    <string name="home_headline">Plan your\nnext adventure</string>
+    <string name="home_subtitle">Tell us where you want to go,\nand let AI handle the rest.</string>
+    <string name="home_search_hint">Where do you want to go?</string>
+    <string name="home_section_explore">Explore</string>
+    <string name="home_section_recent">Your Recent Plans</string>
+    <string name="home_empty_destinations">No destinations to explore yet.</string>
+    <string name="home_empty_plans">No plans yet. Search for a destination to create one.</string>
+
+    <!-- Trip plan -->
+    <string name="trip_label">Your Trip Plan</string>
+    <string name="trip_subtitle">%1$s • %2$s</string>
+    <string name="trip_stat_budget">Est. Budget</string>
+    <string name="trip_stat_duration">Trip Duration</string>
+    <string name="trip_stat_rating">Overall Rating</string>
+    <string name="trip_tab_itinerary">Itinerary</string>
+    <string name="trip_tab_map">Map</string>
+    <string name="trip_tab_save">Save</string>
+    <string name="trip_tab_saved">Saved</string>
+    <string name="trip_day_header">Day %1$d • %2$s</string>
+    <string name="trip_save_plan">Save Trip Plan</string>
+    <string name="trip_saved">Saved</string>
+    <string name="trip_empty_itinerary">Your itinerary is empty.</string>
+    <string name="trip_map_placeholder">Map view will appear here</string>
+
+    <!-- Activity types -->
+    <string name="activity_type_hotel">Hotel</string>
+    <string name="activity_type_activity">Activity</string>
+    <string name="activity_type_sightseeing">Sightseeing</string>
+    <string name="activity_type_food">Food</string>
+    <string name="activity_type_transport">Transport</string>
 </resources>

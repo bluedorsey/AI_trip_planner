@@ -17,3 +17,19 @@ val background_colour = Color(0xFFF5F4F9)
 val selected_slider = Color(0xFFE1E5FB)
 val selected_icon = Color(0xFF4A62F8)
 val save_trip_button = Color(0xFF2B2E4C)//it should be gradient
+
+// ---- Surfaces & decoration -------------------------------------------------
+val GlassWhite = Color(0xCCFFFFFF)          // translucent card surface
+val GlassWhiteStrong = Color(0xF2FFFFFF)    // near-opaque card surface
+val DividerSoft = Color(0x1F1E2340)
+
+// Hero sky gradient shown behind (and until) the hero image loads
+val SkyTop = Color(0xFFB4C3F4)
+val SkyMid = Color(0xFFF0D5DA)
+
+// Shimmer placeholders
+val ShimmerBase = Color(0xFFE7E9F3)
+val ShimmerHighlight = Color(0xFFFAFAFD)
+
+// Primary CTA gradient (see `save_trip_button` for the start colour)
+val SaveTripGradientEnd = Color(0xFF4A4F7E)
