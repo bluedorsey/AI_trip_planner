@@ -13,6 +13,8 @@ langchain_groq
 langchain_openai
 langchain-google-genai
 langgraph
-langchain-google-community[places]
+langchain-google-community
+# googlemaps>=4.10 is sdist-only and Vercel installs with --no-build; 4.2.0 ships a wheel and covers the calls used (Client, places, place)
+googlemaps==4.2.0
 serpapi
 firebase-admin
