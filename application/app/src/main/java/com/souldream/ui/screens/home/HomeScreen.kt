@@ -70,7 +70,7 @@ fun HomeScreen(
     ProvideShimmer {
         Box(modifier.fillMaxSize().background(background_colour)) {
             HeroBackdrop(
-                imageModel = state.heroImage,
+                imageModel = state.heroImage ?: R.drawable.back_image,
                 height = HeroHeight,
                 scrollOffsetProvider = { listState.heroScrollOffset() },
             )
