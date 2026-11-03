@@ -7,6 +7,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,9 +16,13 @@ import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
 import com.souldream.auth.signInWithGoogle
+import com.souldream.ui.screens.explore.ExploreActions
+import com.souldream.ui.screens.home.HomeActions
 import com.souldream.ui.screens.login.LoginActions
 import com.souldream.ui.screens.login.LoginUiState
+import com.souldream.ui.screens.saved.SavedActions
 import com.souldream.ui.screens.settings.SettingsActions
+import com.souldream.ui.screens.tripplan.TripPlanActions
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import kotlinx.coroutines.CancellationException
@@ -25,6 +31,7 @@ import com.souldream.navigation.AppNavHost
 import com.souldream.ui.theme.SouldreamTheme
 
 class MainActivity : ComponentActivity() {
+    private val vm: MainViewModel by viewModels()
     private var signedIn by mutableStateOf(false)
     private var loginState by mutableStateOf(LoginUiState())
     private val authListener = FirebaseAuth.AuthStateListener { signedIn = it.currentUser != null }
@@ -40,17 +47,39 @@ class MainActivity : ComponentActivity() {
         requestHighestRefreshRate()
         FirebaseAuth.getInstance().addAuthStateListener(authListener)
         setContent {
-            // No data layer yet: AppNavHost's default UI states are all "loading",
-            // so both screens render their shimmer placeholders.
+            val homeState by vm.homeState.collectAsState()
+            val savedState by vm.savedState.collectAsState()
+            val exploreState by vm.exploreState.collectAsState()
+            val tripPlanState by vm.tripPlanState.collectAsState()
             SouldreamTheme(darkTheme = false, dynamicColor = false) {
                 AppNavHost(
                     signedIn = signedIn,
                     loginState = loginState,
                     loginActions = LoginActions(onGoogleSignInClick = ::signIn),
+                    homeState = homeState,
+                    homeActions = homeActions,
+                    savedState = savedState,
+                    savedActions = savedActions,
+                    exploreState = exploreState,
+                    exploreActions = ExploreActions(),
+                    tripPlanState = tripPlanState,
+                    tripPlanActions = tripPlanActions,
                     settingsActions = SettingsActions(onSignOutClick = ::signOut),
                 )
             }
         }
+    }
+
+    // Hoisted so AppNavHost's remember(actions) isn't invalidated on every recomposition.
+    private val homeActions by lazy {
+        HomeActions(
+            onSearchSubmit = { query, categoryId -> vm.generate(query, categoryId) },
+            onPlanClick = { vm.openTrip(it.id) },
+        )
+    }
+    private val savedActions by lazy { SavedActions(onPlanClick = { vm.openTrip(it.id) }) }
+    private val tripPlanActions by lazy {
+        TripPlanActions(onBack = vm::closeTrip, onToggleSave = vm::setSaved)
     }
 
     override fun onDestroy() {

@@ -29,6 +29,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        // Production alias: public. The "-git-main-" alias sits behind Vercel Authentication.
+        buildConfigField("String", "BACKEND_URL", "\"https://ai-trip-planner-backend.vercel.app\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -60,6 +63,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -76,10 +80,13 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
     testImplementation(libs.junit)
+    testImplementation(libs.org.json) // android.jar stubs org.json in JVM unit tests
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

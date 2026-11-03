@@ -20,6 +20,10 @@
     <string name="nav_explore">Explore</string>
     <string name="nav_settings">Settings</string>
 
+    <!-- Trip generation -->
+    <string name="error_plan">We could not generate your trip. Please try again.</string>
+    <string name="error_sign_in_again">Your session expired. Please sign in again.</string>
+
     <!-- Login -->
     <string name="login_headline">Welcome to\nyour next trip</string>
     <string name="login_subtitle">Sign in to plan, save and revisit your adventures.</string>
