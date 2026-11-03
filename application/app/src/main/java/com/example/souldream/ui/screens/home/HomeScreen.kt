@@ -25,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.souldream.R
+import com.example.myapplication.R
 import com.example.souldream.ui.animation.ProvideShimmer
 import com.example.souldream.ui.animation.staggeredEntrance
 import com.example.souldream.ui.components.HeroBackdrop
