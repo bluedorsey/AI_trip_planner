@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// Deny by default. Only the paths below are reachable, and only by a signed-in user.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Shape of a trip written by the app (see TripStore.kt). Keeps clients from storing junk or huge docs.
+    function validTrip(d) {
+      return d.keys().hasOnly(['title', 'location', 'dateRange', 'budget', 'duration', 'rating',
+                               'heroImageUrl', 'query', 'saved', 'createdAt', 'days'])
+        && d.keys().hasAll(['title', 'location', 'dateRange', 'budget', 'duration', 'rating',
+                            'query', 'saved', 'createdAt', 'days'])
+        && d.title is string && d.title.size() > 0 && d.title.size() <= 200
+        && d.location is string && d.location.size() <= 200
+        && d.dateRange is string && d.dateRange.size() <= 100
+        && d.budget is string && d.budget.size() <= 100
+        && d.duration is string && d.duration.size() <= 100
+        && d.rating is string && d.rating.size() <= 20
+        && d['query'] is string && d['query'].size() <= 500
+        && d.saved is bool
+        && d.days is list && d.days.size() <= 31
+        && (!('heroImageUrl' in d) || (d.heroImageUrl is string && d.heroImageUrl.size() <= 2000));
+    }
+
+    // Each user's own trips, and nobody else's.
+    match /users/{uid}/trips/{tripId} {
+      allow read, delete: if isOwner(uid);
+
+      allow create: if isOwner(uid)
+        && validTrip(request.resource.data)
+        && request.resource.data.saved == false
+        && request.resource.data.createdAt == request.time;
+
+      // The only edit the app makes is toggling "saved".
+      allow update: if isOwner(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['saved'])
+        && request.resource.data.saved is bool;
+    }
+
+    // Explore carousel content: managed from the Firebase console / Admin SDK, read-only for apps.
+    match /destinations/{destinationId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+  }
+}
