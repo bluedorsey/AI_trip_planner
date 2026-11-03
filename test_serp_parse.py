@@ -2,7 +2,7 @@
 
 No network. Fixtures below are trimmed from real SerpAPI responses for Jaipur.
 """
-from utils.place_into_search import SerpAPI_tool
+from app.utils.place_into_search import SerpAPI_tool
 
 
 def test_local_pack():
