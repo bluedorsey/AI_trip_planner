@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.example.souldream.R
 import com.example.souldream.model.TripActivity
 import com.example.souldream.model.TripDay
+import com.example.souldream.ui.animation.ProvideShimmer
 import com.example.souldream.ui.animation.staggeredEntrance
 import com.example.souldream.ui.components.AsyncContent
 import com.example.souldream.ui.components.HeroBackdrop
@@ -88,106 +89,108 @@ fun TripPlanScreen(
     val statusBarInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navigationBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Box(modifier.fillMaxSize().background(background_colour)) {
-        HeroBackdrop(
-            imageModel = plan?.heroImageUrl,
-            height = HeroHeight,
-            scrollOffsetProvider = { listState.heroScrollOffset() },
-        )
+    ProvideShimmer {
+        Box(modifier.fillMaxSize().background(background_colour)) {
+            HeroBackdrop(
+                imageModel = plan?.heroImageUrl,
+                height = HeroHeight,
+                scrollOffsetProvider = { listState.heroScrollOffset() },
+            )
 
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = CtaAreaHeight + navigationBarInset),
-        ) {
-            item(key = "header") {
-                TripHeader(
-                    plan = plan,
-                    modifier = Modifier.padding(
-                        start = ScreenPadding,
-                        end = ScreenPadding,
-                        top = statusBarInset + TopBarSpace + 24.dp,
-                    ),
-                )
-            }
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = CtaAreaHeight + navigationBarInset),
+            ) {
+                item(key = "header") {
+                    TripHeader(
+                        plan = plan,
+                        modifier = Modifier.padding(
+                            start = ScreenPadding,
+                            end = ScreenPadding,
+                            top = statusBarInset + TopBarSpace + 24.dp,
+                        ),
+                    )
+                }
 
-            item(key = "stats") {
-                TripStatsCard(
-                    plan = plan,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 24.dp)
-                        .staggeredEntrance(index = 4),
-                )
-            }
+                item(key = "stats") {
+                    TripStatsCard(
+                        plan = plan,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 24.dp)
+                            .staggeredEntrance(index = 4),
+                    )
+                }
 
-            item(key = "tabs") {
-                TripTabBar(
-                    selected = tab,
-                    onSelect = { tab = it },
-                    isSaved = isSaved,
-                    onToggleSave = toggleSave,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .staggeredEntrance(index = 5),
-                )
-            }
+                item(key = "tabs") {
+                    TripTabBar(
+                        selected = tab,
+                        onSelect = { tab = it },
+                        isSaved = isSaved,
+                        onToggleSave = toggleSave,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .staggeredEntrance(index = 5),
+                    )
+                }
 
-            item(key = "tab-content") {
-                AnimatedContent(
-                    targetState = tab,
-                    modifier = Modifier.fillMaxWidth(),
-                    transitionSpec = {
-                        val forward = targetState.ordinal > initialState.ordinal
-                        val direction = if (forward) 1 else -1
-                        (slideInHorizontally(tween(350)) { it / 4 * direction } + fadeIn(tween(350))) togetherWith
-                            (slideOutHorizontally(tween(300)) { -it / 4 * direction } + fadeOut(tween(200))) using
-                            SizeTransform(clip = false)
-                    },
-                    label = "tripTabContent",
-                ) { current ->
-                    when (current) {
-                        TripTab.Itinerary -> ItineraryContent(
-                            days = state.plan.map { it.days },
-                            onActivityClick = actions.onActivityClick,
-                        )
+                item(key = "tab-content") {
+                    AnimatedContent(
+                        targetState = tab,
+                        modifier = Modifier.fillMaxWidth(),
+                        transitionSpec = {
+                            val forward = targetState.ordinal > initialState.ordinal
+                            val direction = if (forward) 1 else -1
+                            (slideInHorizontally(tween(350)) { it / 4 * direction } + fadeIn(tween(350))) togetherWith
+                                (slideOutHorizontally(tween(300)) { -it / 4 * direction } + fadeOut(tween(200))) using
+                                SizeTransform(clip = false)
+                        },
+                        label = "tripTabContent",
+                    ) { current ->
+                        when (current) {
+                            TripTab.Itinerary -> ItineraryContent(
+                                days = state.plan.map { it.days },
+                                onActivityClick = actions.onActivityClick,
+                            )
 
-                        TripTab.Map -> Box(Modifier.padding(horizontal = 16.dp, vertical = 24.dp)) {
-                            mapContent()
+                            TripTab.Map -> Box(Modifier.padding(horizontal = 16.dp, vertical = 24.dp)) {
+                                mapContent()
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // Floating controls, drawn above the scrolling content.
-        TripTopBar(
-            onBack = actions.onBack,
-            onShare = actions.onShare,
-            onMore = actions.onMore,
-        )
-
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(background_colour.copy(alpha = 0f), background_colour),
-                    ),
-                )
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 28.dp,
-                    bottom = navigationBarInset + 16.dp,
-                )
-                .staggeredEntrance(index = 6, offsetY = 72.dp),
-        ) {
-            SaveTripButton(
-                isSaved = isSaved,
-                onClick = toggleSave,
-                enabled = plan != null,
+            // Floating controls, drawn above the scrolling content.
+            TripTopBar(
+                onBack = actions.onBack,
+                onShare = actions.onShare,
+                onMore = actions.onMore,
             )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(background_colour.copy(alpha = 0f), background_colour),
+                        ),
+                    )
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 28.dp,
+                        bottom = navigationBarInset + 16.dp,
+                    )
+                    .staggeredEntrance(index = 6, offsetY = 72.dp),
+            ) {
+                SaveTripButton(
+                    isSaved = isSaved,
+                    onClick = toggleSave,
+                    enabled = plan != null,
+                )
+            }
         }
     }
 }

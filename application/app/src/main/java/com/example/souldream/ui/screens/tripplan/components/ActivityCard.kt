@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.LocationOn
@@ -28,7 +27,9 @@ import androidx.compose.ui.unit.dp
 import com.example.souldream.model.TripActivity
 import com.example.souldream.ui.animation.pressScale
 import com.example.souldream.ui.components.AppImage
-import com.example.souldream.ui.components.ShimmerBox
+import com.example.souldream.ui.components.SkeletonBlock
+import com.example.souldream.ui.components.SkeletonLine
+import com.example.souldream.ui.components.skeletonSemantics
 import com.example.souldream.ui.components.TagChip
 import com.example.souldream.ui.theme.GlassWhite
 
@@ -111,15 +112,23 @@ fun ActivityCardSkeleton(modifier: Modifier = Modifier) {
             .fillMaxWidth()
             .clip(CardShape)
             .background(GlassWhite)
-            .padding(10.dp),
+            .padding(10.dp)
+            .skeletonSemantics(),
     ) {
-        ShimmerBox(Modifier.size(ThumbSize), ThumbShape)
+        SkeletonBlock(Modifier.size(ThumbSize), ThumbShape)
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            ShimmerBox(Modifier.fillMaxWidth(0.65f).height(18.dp), CircleShape)
-            ShimmerBox(Modifier.fillMaxWidth().height(12.dp), CircleShape)
-            ShimmerBox(Modifier.fillMaxWidth(0.8f).height(12.dp), CircleShape)
-            ShimmerBox(Modifier.fillMaxWidth(0.4f).height(12.dp), CircleShape)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                SkeletonLine(height = 18.dp, widthFraction = 0.5f)
+                SkeletonLine(Modifier.width(56.dp), height = 26.dp) // type tag
+            }
+            SkeletonLine(height = 12.dp, widthFraction = 1f)
+            SkeletonLine(height = 12.dp, widthFraction = 0.75f)
+            SkeletonLine(height = 12.dp, widthFraction = 0.4f)
         }
     }
 }

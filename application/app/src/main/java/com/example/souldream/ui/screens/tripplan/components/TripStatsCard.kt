@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.example.souldream.R
 import com.example.souldream.model.TripPlan
 import com.example.souldream.ui.components.ShimmerText
+import com.example.souldream.ui.components.SkeletonCircle
 import com.example.souldream.ui.theme.DividerSoft
 import com.example.souldream.ui.theme.GlassWhite
 
@@ -80,12 +81,16 @@ private fun StatItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(22.dp),
-        )
+        if (value == null) {
+            SkeletonCircle(22.dp)
+        } else {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(22.dp),
+            )
+        }
         ShimmerText(
             text = value,
             placeholderWidth = 56.dp,

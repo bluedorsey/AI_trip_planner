@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,7 +25,8 @@ import com.example.souldream.model.TripActivity
 import com.example.souldream.model.TripDay
 import com.example.souldream.ui.animation.rememberEntranceProgress
 import com.example.souldream.ui.animation.staggeredEntrance
-import com.example.souldream.ui.components.ShimmerBox
+import com.example.souldream.ui.components.SkeletonLine
+import com.example.souldream.ui.components.skeletonSemantics
 import com.example.souldream.ui.theme.DividerSoft
 import com.example.souldream.ui.theme.button_colour
 import com.example.souldream.ui.theme.selected_slider
@@ -88,14 +88,18 @@ fun DayTimelineItem(
 
 @Composable
 fun DayTimelineItemSkeleton(isLast: Boolean, modifier: Modifier = Modifier) {
-    Row(modifier = modifier.timelineGutter(progress = { 1f }, drawLine = !isLast)) {
+    Row(
+        modifier = modifier
+            .timelineGutter(progress = { 1f }, drawLine = !isLast)
+            .skeletonSemantics(),
+    ) {
         Spacer(Modifier.width(GutterWidth))
         Column(
             modifier = Modifier.weight(1f).padding(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            ShimmerBox(Modifier.fillMaxWidth(0.5f).height(20.dp), CircleShape)
-            ShimmerBox(Modifier.fillMaxWidth(0.35f).height(14.dp), CircleShape)
+            SkeletonLine(height = 20.dp, widthFraction = 0.5f)
+            SkeletonLine(height = 14.dp, widthFraction = 0.35f)
             Spacer(Modifier.height(4.dp))
             ActivityCardSkeleton()
         }
