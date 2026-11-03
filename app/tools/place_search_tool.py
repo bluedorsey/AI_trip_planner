@@ -1,6 +1,6 @@
 from typing import List
 from langchain.tools import tool
-from utils.place_into_search import tavily_search_tool, GooglePlacesSearchTool , SerpAPI_tool
+from app.utils.place_into_search import tavily_search_tool, GooglePlacesSearchTool , SerpAPI_tool
 import os
 from dotenv import load_dotenv
 

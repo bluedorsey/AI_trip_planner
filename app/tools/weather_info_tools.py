@@ -3,7 +3,7 @@ from typing import List,Dict,Any,Optional
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from langchain.tools import tool
-from utils.weather_info import WeatherInfo
+from app.utils.weather_info import WeatherInfo
 
 class WeatherInfoTool:
 

@@ -4,7 +4,7 @@
 
 from typing import List
 from langchain.tools import tool
-from utils.calculator import Calculator as CalculatorService
+from app.utils.calculator import Calculator as CalculatorService
 
 class ExpenseCalculatorTool:
     def __init__(self):

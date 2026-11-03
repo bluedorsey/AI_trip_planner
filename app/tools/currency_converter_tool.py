@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 from langchain.tools import tool
-from utils.currency_converter import CurrencyConverter
+from app.utils.currency_converter import CurrencyConverter
 
 class CurrencyConverterTool:
     def __init__(self):

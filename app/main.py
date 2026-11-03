@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from agent.agentic_workflow import GraphBuilder
+from app.agent.agentic_workflow import GraphBuilder
 
 
 app = FastAPI()
