@@ -9,28 +9,45 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color(0xFF536DFE),
+    secondary = Color(0xFF64748B),
+    tertiary = Color(0xFF42A5A5),
+    background = Color(0xFF0F1117),
+    surface = Color(0xFF181A22)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Color(0xFF536DFE),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFE8ECFF),
+    onPrimaryContainer = Color(0xFF172B70),
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    secondary = Color(0xFF64748B),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFE8EDF3),
+    onSecondaryContainer = Color(0xFF263445),
+
+    tertiary = Color(0xFF269E9A),
+    onTertiary = Color(0xFFFFFFFF),
+    tertiaryContainer = Color(0xFFD9F4F0),
+    onTertiaryContainer = Color(0xFF064E4A),
+
+    background = Color(0xFFF8F9FC),
+    onBackground = Color(0xFF191C24),
+
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF191C24),
+
+    surfaceVariant = Color(0xFFF0F2F7),
+    onSurfaceVariant = Color(0xFF626B7A),
+
+    outline = Color(0xFFD5DAE3),
+    error = Color(0xFFBA1A1A),
+    onError = Color(0xFFFFFFFF)
 )
 
 @Composable
