@@ -20,6 +20,22 @@
     <string name="nav_explore">Explore</string>
     <string name="nav_settings">Settings</string>
 
+    <!-- Login -->
+    <string name="login_headline">Welcome to\nyour next trip</string>
+    <string name="login_subtitle">Sign in to plan, save and revisit your adventures.</string>
+    <string name="login_google">Continue with Google</string>
+    <string name="login_error">Google sign-in failed. Please try again.</string>
+
+    <!-- Saved / Explore / Settings -->
+    <string name="saved_title">Saved Trips</string>
+    <string name="saved_empty">No saved trips yet. Save a plan to find it here.</string>
+    <string name="explore_title">Explore</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_profile">Profile</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_about">About</string>
+    <string name="settings_sign_out">Sign out</string>
+
     <!-- Home -->
     <string name="home_headline">Plan your\nnext adventure</string>
     <string name="home_subtitle">Tell us where you want to go,\nand let AI handle the rest.</string>
