@@ -29,6 +29,9 @@
     <string name="login_subtitle">Sign in to plan, save and revisit your adventures.</string>
     <string name="login_google">Continue with Google</string>
     <string name="login_error">Google sign-in failed. Please try again.</string>
+    <string name="login_error_no_account">No Google account found on this phone. Add one in Settings, then try again.</string>
+    <string name="login_error_play_services">Google Play Services is missing or out of date. Update it and try again.</string>
+    <string name="login_error_network">No internet connection. Check your network and try again.</string>
 
     <!-- Saved / Explore / Settings -->
     <string name="saved_title">Saved Trips</string>

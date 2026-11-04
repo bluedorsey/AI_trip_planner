@@ -1,6 +1,7 @@
 package com.souldream
 
 import android.graphics.Color
+import android.util.Log
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -13,6 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
+import androidx.credentials.exceptions.GetCredentialUnsupportedException
+import androidx.credentials.exceptions.NoCredentialException
+import com.google.firebase.FirebaseNetworkException
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
 import com.souldream.auth.signInWithGoogle
@@ -104,8 +109,16 @@ class MainActivity : ComponentActivity() {
                 throw e
             } catch (_: GetCredentialCancellationException) {
                 LoginUiState() // user dismissed the account sheet
-            } catch (_: Exception) {
-                LoginUiState(error = getString(R.string.login_error))
+            } catch (e: Exception) {
+                Log.e("SignIn", "Google sign-in failed", e) // adb logcat -s SignIn
+                val message = when (e) {
+                    is NoCredentialException -> R.string.login_error_no_account
+                    is GetCredentialProviderConfigurationException, is GetCredentialUnsupportedException ->
+                        R.string.login_error_play_services
+                    is FirebaseNetworkException -> R.string.login_error_network
+                    else -> R.string.login_error
+                }
+                LoginUiState(error = getString(message))
             }
         }
     }
