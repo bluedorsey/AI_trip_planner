@@ -17,21 +17,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.automirrored.rounded.Logout
-import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +31,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.souldream.BuildConfig
 import com.souldream.R
 import com.souldream.ui.animation.pressScale
 import com.souldream.ui.components.ScreenTitle
@@ -46,14 +39,10 @@ import com.souldream.ui.theme.GlassWhite
 import com.souldream.ui.theme.background_colour
 import com.souldream.ui.theme.button_colour
 
-data class SettingsUiState(val notificationsEnabled: Boolean = true)
+/** The signed-in account, shown on the Profile row. */
+data class SettingsUiState(val name: String = "", val email: String = "")
 
-data class SettingsActions(
-    val onProfileClick: () -> Unit = {},
-    val onNotificationsChange: (Boolean) -> Unit = {},
-    val onAboutClick: () -> Unit = {},
-    val onSignOutClick: () -> Unit = {},
-)
+data class SettingsActions(val onSignOutClick: () -> Unit = {})
 
 @Composable
 fun SettingsScreen(
@@ -63,8 +52,6 @@ fun SettingsScreen(
     bottomBarHeight: Dp = 0.dp,
 ) {
     val navigationBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    // Held locally so the switch responds before a data layer persists it.
-    var notifications by rememberSaveable { mutableStateOf(state.notificationsEnabled) }
 
     Column(
         modifier = modifier
@@ -75,28 +62,31 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         ScreenTitle(stringResource(R.string.settings_title))
-        SettingRow(Icons.Rounded.Person, stringResource(R.string.settings_profile), actions.onProfileClick) { Chevron() }
-        SettingRow(Icons.Rounded.Notifications, stringResource(R.string.settings_notifications), null) {
-            Switch(
-                checked = notifications,
-                onCheckedChange = {
-                    notifications = it
-                    actions.onNotificationsChange(it)
-                },
-                colors = SwitchDefaults.colors(checkedTrackColor = button_colour),
-            )
-        }
-        SettingRow(Icons.Rounded.Info, stringResource(R.string.settings_about), actions.onAboutClick) { Chevron() }
-        SettingRow(Icons.AutoMirrored.Rounded.Logout, stringResource(R.string.settings_sign_out), actions.onSignOutClick) {}
+        SettingRow(
+            icon = Icons.Rounded.Person,
+            title = state.name.ifBlank { stringResource(R.string.settings_profile) },
+            subtitle = state.email.takeIf { it.isNotBlank() },
+        )
+        SettingRow(
+            icon = Icons.Rounded.Info,
+            title = stringResource(R.string.settings_about),
+            subtitle = stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
+        )
+        SettingRow(
+            icon = Icons.AutoMirrored.Rounded.Logout,
+            title = stringResource(R.string.settings_sign_out),
+            onClick = actions.onSignOutClick,
+        )
     }
 }
 
+/** A row; it is only tappable when [onClick] is given. */
 @Composable
 private fun SettingRow(
     icon: ImageVector,
     title: String,
-    onClick: (() -> Unit)?,
-    trailing: @Composable () -> Unit,
+    subtitle: String? = null,
+    onClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
@@ -110,21 +100,19 @@ private fun SettingRow(
     ) {
         Icon(icon, contentDescription = null, tint = button_colour, modifier = Modifier.size(24.dp))
         Spacer(Modifier.width(16.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.weight(1f),
-        )
-        trailing()
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
-}
-
-@Composable
-private fun Chevron() {
-    Icon(
-        Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-        contentDescription = null,
-        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
 }

@@ -11,11 +11,14 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.souldream.data.BackendApi
 import com.souldream.data.HttpException
+import com.souldream.data.PlanEvent
 import com.souldream.data.StoredTrip
 import com.souldream.data.TripStore
 import com.souldream.model.Destination
 import com.souldream.model.RecentPlan
 import com.souldream.model.TripCategory
+import com.souldream.model.TripDay
+import com.souldream.model.TripPlan
 import com.souldream.ui.screens.explore.ExploreUiState
 import com.souldream.ui.screens.home.HomeUiState
 import com.souldream.ui.screens.saved.SavedUiState
@@ -26,10 +29,15 @@ import com.souldream.ui.state.map
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import java.io.IOException
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -79,6 +87,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val _tripPlan = MutableStateFlow(TripPlanUiState())
     val tripPlanState: StateFlow<TripPlanUiState> = _tripPlan.asStateFlow()
 
+    /** One-off messages for the user (string resource ids), shown as toasts. */
+    private val _messages = MutableSharedFlow<Int>(extraBufferCapacity = 4)
+    val messages: SharedFlow<Int> = _messages.asSharedFlow()
+
     private var currentTripId: String? = null
     private var generation: Job? = null
 
@@ -94,8 +106,24 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val style = categories.firstOrNull { it.id == categoryId }?.let { " (trip style: ${it.label})" }.orEmpty()
         generation = viewModelScope.launch {
             try {
-                val plan = BackendApi.plan(query.trim() + style)
-                uid.value?.let { TripStore.add(it, plan, query) }
+                var meta: TripPlan? = null
+                val days = mutableListOf<TripDay>()
+                BackendApi.plan(query.trim() + style).collect { event ->
+                    when (event) {
+                        is PlanEvent.Status -> _tripPlan.update { it.copy(status = event.text) }
+                        is PlanEvent.Meta -> meta = event.plan
+                        is PlanEvent.DayAdded -> days += event.day
+                    }
+                    // Show the trip as soon as the summary is in, then grow it day by day.
+                    meta?.let { m ->
+                        if (event !is PlanEvent.Status) {
+                            _tripPlan.update { it.copy(plan = Async.Success(m.copy(days = days.toList())), streaming = true) }
+                        }
+                    }
+                }
+                val plan = meta?.copy(days = days.toList())?.takeIf { days.isNotEmpty() }
+                    ?: throw IOException("The plan came back empty")
+                uid.value?.let { TripStore.add(it, plan, query, onError = ::saveFailed) }
                 currentTripId = plan.id
                 _tripPlan.value = TripPlanUiState(Async.Success(plan), isSaved = false)
             } catch (e: CancellationException) {
@@ -124,7 +152,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun setSaved(saved: Boolean) {
         val u = uid.value ?: return
         val id = currentTripId ?: return
-        TripStore.setSaved(u, id, saved)
+        _tripPlan.update { it.copy(isSaved = saved) }
+        TripStore.setSaved(u, id, saved) {
+            // The server refused it: undo the toggle (unless the user has moved to another trip) and say so.
+            if (currentTripId == id) _tripPlan.update { it.copy(isSaved = !saved) }
+            saveFailed()
+        }
+    }
+
+    private fun saveFailed() {
+        _messages.tryEmit(R.string.error_save)
     }
 
     override fun onCleared() {

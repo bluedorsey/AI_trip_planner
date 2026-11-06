@@ -54,14 +54,15 @@ object TripStore {
         awaitClose { reg.remove() }
     }
 
-    fun add(uid: String, plan: TripPlan, query: String) {
+    /** [onError] runs if the server rejects the write (rules, no network for long). */
+    fun add(uid: String, plan: TripPlan, query: String, onError: () -> Unit) {
         trips(uid).document(plan.id).set(plan.toMap(query))
-            .addOnFailureListener { Log.w(TAG, "save failed", it) }
+            .addOnFailureListener { Log.w(TAG, "save failed", it); onError() }
     }
 
-    fun setSaved(uid: String, tripId: String, saved: Boolean) {
+    fun setSaved(uid: String, tripId: String, saved: Boolean, onError: () -> Unit) {
         trips(uid).document(tripId).update("saved", saved)
-            .addOnFailureListener { Log.w(TAG, "setSaved failed", it) }
+            .addOnFailureListener { Log.w(TAG, "setSaved failed", it); onError() }
     }
 }
 

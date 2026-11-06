@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Souldream" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Ivory window background: the system splash and the first frame match the Soul Dream splash. -->
+    <style name="Theme.Souldream" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FFFAF8F3</item>
+    </style>
 </resources>

@@ -61,8 +61,11 @@ fun DayTimelineItem(
                     translationY = (1f - progress) * 24.dp.toPx()
                 },
         ) {
+            // The model often writes "Day 1" as the date too, which showed as "Day 1 • Day 1".
+            val hasDate = day.date.isNotBlank() && !day.date.startsWith("Day", ignoreCase = true)
             Text(
-                text = stringResource(R.string.trip_day_header, day.dayNumber, day.date),
+                text = if (hasDate) stringResource(R.string.trip_day_header, day.dayNumber, day.date)
+                else stringResource(R.string.trip_day_plain, day.dayNumber),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,

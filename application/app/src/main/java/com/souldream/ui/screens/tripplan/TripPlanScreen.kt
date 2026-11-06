@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -20,9 +21,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,6 +65,7 @@ import com.souldream.ui.state.dataOrNull
 import com.souldream.ui.state.map
 import com.souldream.ui.theme.SouldreamTheme
 import com.souldream.ui.theme.background_colour
+import com.souldream.ui.theme.selected_icon
 
 private val ScreenPadding = 20.dp
 private val HeroHeight = 340.dp
@@ -150,6 +157,8 @@ fun TripPlanScreen(
                         when (current) {
                             TripTab.Itinerary -> ItineraryContent(
                                 days = state.plan.map { it.days },
+                                status = state.status,
+                                streaming = state.streaming,
                                 onActivityClick = actions.onActivityClick,
                             )
 
@@ -171,7 +180,6 @@ fun TripPlanScreen(
             TripTopBar(
                 onBack = actions.onBack,
                 onShare = actions.onShare,
-                onMore = actions.onMore,
             )
 
             Box(
@@ -194,7 +202,7 @@ fun TripPlanScreen(
                 SaveTripButton(
                     isSaved = isSaved,
                     onClick = toggleSave,
-                    enabled = plan != null,
+                    enabled = plan != null && !state.streaming, // a half-written trip can't be saved
                 )
             }
         }
@@ -204,6 +212,8 @@ fun TripPlanScreen(
 @Composable
 private fun ItineraryContent(
     days: Async<List<TripDay>>,
+    status: String?,
+    streaming: Boolean,
     onActivityClick: (TripActivity) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -213,24 +223,49 @@ private fun ItineraryContent(
         modifier = modifier.fillMaxWidth(),
         loading = {
             Column(sidePadding) {
+                status?.let { ProgressLine(it) }
                 repeat(3) { DayTimelineItemSkeleton(isLast = it == 2) }
             }
         },
     ) { list ->
-        if (list.isEmpty()) {
+        if (list.isEmpty() && !streaming) {
             SectionMessage(stringResource(R.string.trip_empty_itinerary))
         } else {
             Column(sidePadding) {
+                if (streaming) status?.let { ProgressLine(it) }
                 list.forEachIndexed { index, day ->
                     DayTimelineItem(
                         day = day,
-                        isLast = index == list.lastIndex,
+                        isLast = index == list.lastIndex && !streaming,
                         onActivityClick = onActivityClick,
                         index = index,
                     )
                 }
+                // The next day is still being written.
+                if (streaming) DayTimelineItemSkeleton(isLast = true)
             }
         }
+    }
+}
+
+/** What the planner is doing right now, e.g. "Found restaurants". */
+@Composable
+private fun ProgressLine(text: String) {
+    Row(
+        modifier = Modifier.padding(start = 6.dp, bottom = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(16.dp),
+            strokeWidth = 2.dp,
+            color = selected_icon,
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

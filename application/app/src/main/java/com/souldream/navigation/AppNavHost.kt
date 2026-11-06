@@ -119,9 +119,17 @@ fun AppNavHost(
 
     val navigatingHomeActions = remember(homeActions) {
         homeActions.copy(
+            onProfileClick = {
+                destination = AppDestination.Settings // where the account lives
+                homeActions.onProfileClick()
+            },
             onSearchSubmit = { query, categoryId ->
                 openTrip()
                 homeActions.onSearchSubmit(query, categoryId)
+            },
+            onDestinationClick = { destinationItem ->
+                openTrip()
+                homeActions.onDestinationClick(destinationItem)
             },
             onPlanClick = { plan ->
                 openTrip()
@@ -134,6 +142,14 @@ fun AppNavHost(
             onSeeAllPlans = {
                 destination = AppDestination.Saved
                 homeActions.onSeeAllPlans()
+            },
+        )
+    }
+    val navigatingExploreActions = remember(exploreActions) {
+        exploreActions.copy(
+            onDestinationClick = { destinationItem ->
+                openTrip()
+                exploreActions.onDestinationClick(destinationItem)
             },
         )
     }
@@ -198,7 +214,7 @@ fun AppNavHost(
 
                 AppDestination.Explore -> ExploreScreen(
                     state = exploreState,
-                    actions = exploreActions,
+                    actions = navigatingExploreActions,
                     bottomBarHeight = BottomNavBarHeight,
                 )
 

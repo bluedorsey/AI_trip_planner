@@ -1,18 +1,25 @@
 package com.souldream
 
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.util.Log
 import android.os.Bundle
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
 import androidx.credentials.exceptions.GetCredentialUnsupportedException
@@ -26,8 +33,12 @@ import com.souldream.ui.screens.home.HomeActions
 import com.souldream.ui.screens.login.LoginActions
 import com.souldream.ui.screens.login.LoginUiState
 import com.souldream.ui.screens.saved.SavedActions
+import com.souldream.model.TripActivity
+import com.souldream.splash.SoulDreamSplash
 import com.souldream.ui.screens.settings.SettingsActions
+import com.souldream.ui.screens.settings.SettingsUiState
 import com.souldream.ui.screens.tripplan.TripPlanActions
+import com.souldream.ui.state.dataOrNull
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import kotlinx.coroutines.CancellationException
@@ -56,22 +67,35 @@ class MainActivity : ComponentActivity() {
             val savedState by vm.savedState.collectAsState()
             val exploreState by vm.exploreState.collectAsState()
             val tripPlanState by vm.tripPlanState.collectAsState()
+            val user = if (signedIn) FirebaseAuth.getInstance().currentUser else null
             SouldreamTheme(darkTheme = false, dynamicColor = false) {
-                AppNavHost(
-                    signedIn = signedIn,
-                    loginState = loginState,
-                    loginActions = LoginActions(onGoogleSignInClick = ::signIn),
-                    homeState = homeState,
-                    homeActions = homeActions,
-                    savedState = savedState,
-                    savedActions = savedActions,
-                    exploreState = exploreState,
-                    exploreActions = ExploreActions(),
-                    tripPlanState = tripPlanState,
-                    tripPlanActions = tripPlanActions,
-                    settingsActions = SettingsActions(onSignOutClick = ::signOut),
-                )
+                var showSplash by rememberSaveable { mutableStateOf(true) }
+                Box(Modifier.fillMaxSize()) {
+                    // The app is composed under the splash, which fades out to reveal it.
+                    AppNavHost(
+                        signedIn = signedIn,
+                        loginState = loginState,
+                        loginActions = LoginActions(onGoogleSignInClick = ::signIn),
+                        homeState = homeState,
+                        homeActions = homeActions,
+                        savedState = savedState,
+                        savedActions = savedActions,
+                        exploreState = exploreState,
+                        exploreActions = exploreActions,
+                        tripPlanState = tripPlanState,
+                        tripPlanActions = tripPlanActions,
+                        settingsState = SettingsUiState(
+                            name = user?.displayName.orEmpty(),
+                            email = user?.email.orEmpty(),
+                        ),
+                        settingsActions = SettingsActions(onSignOutClick = ::signOut),
+                    )
+                    if (showSplash) SoulDreamSplash(onFinished = { showSplash = false })
+                }
             }
+        }
+        lifecycleScope.launch {
+            vm.messages.collect { Toast.makeText(this@MainActivity, it, Toast.LENGTH_LONG).show() }
         }
     }
 
@@ -79,12 +103,46 @@ class MainActivity : ComponentActivity() {
     private val homeActions by lazy {
         HomeActions(
             onSearchSubmit = { query, categoryId -> vm.generate(query, categoryId) },
+            onDestinationClick = { vm.generate(getString(R.string.plan_trip_to, it.name), null) },
             onPlanClick = { vm.openTrip(it.id) },
         )
     }
+    private val exploreActions by lazy {
+        ExploreActions(onDestinationClick = { vm.generate(getString(R.string.plan_trip_to, it.name), null) })
+    }
     private val savedActions by lazy { SavedActions(onPlanClick = { vm.openTrip(it.id) }) }
     private val tripPlanActions by lazy {
-        TripPlanActions(onBack = vm::closeTrip, onToggleSave = vm::setSaved)
+        TripPlanActions(
+            onBack = vm::closeTrip,
+            onShare = ::shareTrip,
+            onToggleSave = vm::setSaved,
+            onActivityClick = ::openInMaps,
+        )
+    }
+
+    /** Opens the place in Google Maps (or the browser): the title plus the city finds the exact spot. */
+    private fun openInMaps(activity: TripActivity) {
+        val city = vm.tripPlanState.value.plan.dataOrNull()?.location.orEmpty()
+        val query = Uri.encode("${activity.title} $city".trim())
+        val uri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$query")
+        runCatching { startActivity(Intent(Intent.ACTION_VIEW, uri)) }
+    }
+
+    private fun shareTrip() {
+        val plan = vm.tripPlanState.value.plan.dataOrNull() ?: return
+        val text = buildString {
+            appendLine(plan.title)
+            appendLine(listOf(plan.duration, plan.dateRange, plan.budget).filter { it.isNotBlank() }.joinToString(" • "))
+            plan.days.forEach { day ->
+                appendLine()
+                appendLine(getString(R.string.share_day, day.dayNumber, day.theme))
+                day.activities.forEach { appendLine("• ${it.title}") }
+            }
+            appendLine()
+            append(getString(R.string.share_footer))
+        }
+        val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
+        startActivity(Intent.createChooser(send, null))
     }
 
     override fun onDestroy() {

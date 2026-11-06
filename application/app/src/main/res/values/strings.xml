@@ -4,7 +4,6 @@
     <!-- Content descriptions -->
     <string name="cd_back">Back</string>
     <string name="cd_share">Share trip</string>
-    <string name="cd_more">More options</string>
     <string name="cd_profile">Profile</string>
     <string name="cd_plan_trip">Plan trip</string>
     <string name="cd_open_plan">Open plan</string>
@@ -23,6 +22,8 @@
     <!-- Trip generation -->
     <string name="error_plan">We could not generate your trip. Please try again.</string>
     <string name="error_sign_in_again">Your session expired. Please sign in again.</string>
+    <string name="plan_trip_to">Plan a trip to %1$s</string>
+    <string name="error_save">Could not save this trip. Check your connection and try again.</string>
 
     <!-- Login -->
     <string name="login_headline">Welcome to\nyour next trip</string>
@@ -39,8 +40,8 @@
     <string name="explore_title">Explore</string>
     <string name="settings_title">Settings</string>
     <string name="settings_profile">Profile</string>
-    <string name="settings_notifications">Notifications</string>
     <string name="settings_about">About</string>
+    <string name="settings_version">Souldream %1$s</string>
     <string name="settings_sign_out">Sign out</string>
 
     <!-- Home -->
@@ -67,6 +68,9 @@
     <string name="trip_details_transport">Getting around</string>
     <string name="trip_empty_details">No extra details for this trip. Plan a new one to see costs, weather and transport.</string>
     <string name="trip_day_header">Day %1$d • %2$s</string>
+    <string name="trip_day_plain">Day %1$d</string>
+    <string name="share_day">Day %1$d: %2$s</string>
+    <string name="share_footer">Planned with Souldream</string>
     <string name="trip_save_plan">Save Trip Plan</string>
     <string name="trip_saved">Saved</string>
     <string name="trip_empty_itinerary">Your itinerary is empty.</string>
