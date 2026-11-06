@@ -27,7 +27,7 @@ class WeatherInfo:
                 "q": city,
                 "appid": self.api_key,
                 "units": "metric",
-                "cnt": 5  # Get forecast for the next 5 days
+                "cnt": 40  # 3-hour steps: 40 entries = the 5 days the API offers
                 }
             response = requests.get(url, params=params)
             return response.json() if response.status_code == 200 else None

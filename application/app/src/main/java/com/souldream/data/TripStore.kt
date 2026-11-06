@@ -88,6 +88,7 @@ private fun TripPlan.toMap(query: String): Map<String, Any> = buildMap {
                         "description" to a.description,
                         "location" to a.location,
                         "type" to a.type.name,
+                        "imageUrl" to a.imageUrl,
                     )
                 },
             )
@@ -112,6 +113,7 @@ private fun DocumentSnapshot.toStoredTrip(): StoredTrip? {
                     description = a["description"] as? String ?: "",
                     location = a["location"] as? String ?: "",
                     type = ActivityType.entries.firstOrNull { it.name == a["type"] } ?: ActivityType.Activity,
+                    imageUrl = a["imageUrl"] as? String,
                 )
             },
         )

@@ -29,6 +29,20 @@ class ParsePlanTest {
     }
 
     @Test
+    fun readsImageUrlsAndTreatsJsonNullAsNoImage() {
+        val plan = parsePlan(
+            JSONObject(
+                """{"title":"T","heroImageUrl":"https://x/hero.jpg","days":[{"dayNumber":1,"activities":[
+                {"title":"A","imageUrl":"https://x/a.jpg"},{"title":"B","imageUrl":null}]}]}""",
+            ),
+        )
+        assertEquals("https://x/hero.jpg", plan.heroImageUrl)
+        assertEquals("https://x/a.jpg", plan.days[0].activities[0].imageUrl)
+        assertEquals(null, plan.days[0].activities[1].imageUrl)
+        assertEquals(null, parsePlan(JSONObject("""{"title":"T","days":[]}""")).heroImageUrl)
+    }
+
+    @Test
     fun missingOptionalFieldsDoNotCrash() {
         val plan = parsePlan(JSONObject("""{"title":"T","days":[]}"""))
         assertEquals("-", plan.rating.ifEmpty { "-" })

@@ -1,4 +1,5 @@
 import html
+import re
 from functools import cached_property
 
 import serpapi
@@ -198,7 +199,7 @@ class tavily_search_tool:
                 name, rating, price level, address, and other available details.
             """
             result = self.tavily_search.invoke(
-                        {"query": f"top attractive places in and around {place}"}
+                        {"query": f"best rated restaurants in {place} at budget, mid-range and premium prices"}
                     )
             if isinstance(result, dict) and result.get("answer"):
                     return result["answer"]
@@ -256,7 +257,7 @@ class tavily_search_tool:
                         name, rating, address, and other relevant details.
                 """
                 result = self.tavily_search.invoke(
-                                    {"query": f"top attractive street food place in and around {place}"}
+                                    {"query": f"activities and experiences for travelers in {place}"}
                                     )
                 if isinstance(result, dict) and result.get("answer"):
                                     return result["answer"]
@@ -286,7 +287,7 @@ class tavily_search_tool:
                     and other available Tavily Search details.
                 """
                 result = self.tavily_search.invoke(
-                    {"query": f"top attractive street food place in and around {place}"}
+                    {"query": f"best hotels in {place} with prices per night"}
                                 )
                 if isinstance(result, dict) and result.get("answer"):
                             return result["answer"]
@@ -315,7 +316,7 @@ class tavily_search_tool:
                     name, type, distance/address, rating, and other relevant details.
                 """
                 result = self.tavily_search.invoke(
-                    {"query": f"top attractive street food place in and around {place}"}
+                    {"query": f"metro, railway, bus and airport transport options in {place}"}
                                                   )
                 if isinstance(result, dict) and result.get("answer"):
                     return result["answer"]
@@ -339,6 +340,7 @@ class SerpAPI_tool:
         self.api_key = api_key
         self.country = country  # gl= biases results to the traveler's market
         self.client = serpapi.Client(api_key=api_key)
+        self.images = {}  # place name -> photo URL seen this run; never put in the LLM's text
 
     #  internals
     def _search(self, query: str) -> str:
@@ -351,8 +353,21 @@ class SerpAPI_tool:
         })
         if raw.get("error"):
             return f"No results for '{query}' ({raw['error']})."
+        self.images.update(self._images(raw))
         places = self._parse_places(raw)
         return self._format(places) if places else self._fallback(raw, query)
+
+    @staticmethod
+    def _images(raw: dict) -> dict:
+        """Place name -> photo URL from the top_sights and local pack thumbnails."""
+        sights = (raw.get("top_sights") or {}).get("sights", [])
+        places = (raw.get("local_results") or {}).get("places", [])
+        # ponytail: Google-hosted thumbnails may expire on old saved trips; re-host if that shows up.
+        return {
+            p["title"]: re.sub(r"=[^=/]+$", "=w800", p["thumbnail"])  # Google size suffix: 148px -> 800px
+            if "googleusercontent.com" in p["thumbnail"] else p["thumbnail"]
+            for p in [*sights, *places] if p.get("title") and p.get("thumbnail")
+        }
 
     @classmethod
     def _parse_places(cls, raw: dict) -> list:

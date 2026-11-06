@@ -41,6 +41,8 @@ class WeatherInfoTool:
                 forecast_summary = []
                 for day in forecast_data.get("list", []):
                     date = day.get("dt_txt", "N/A")
+                    if "12:00:00" not in date:  # one reading a day is enough to plan with
+                        continue
                     temp = day.get("main", {}).get("temp", "N/A")
                     condition = day.get("weather", [{}])[0].get("description", "N/A")
                     forecast_summary.append(f"{date}: {temp}°C with {condition}")

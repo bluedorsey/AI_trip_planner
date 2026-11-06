@@ -1,4 +1,5 @@
 """Structured trip plan: turns the agent's Markdown answer into JSON the Android app can render."""
+from difflib import get_close_matches
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -7,8 +8,8 @@ from app.utils.model_loader import load_model
 
 
 class Activity(BaseModel):
-    title: str
-    description: str = Field(description="One or two sentences.")
+    title: str = Field(description='The place\'s exact name, e.g. "Hawa Mahal", not "Visit Hawa Mahal".')
+    description: str = Field(description="One or two sentences with concrete details: what to do, timing, entry fee or price.")
     location: str
     type: Literal["Hotel", "Activity", "Sightseeing", "Food", "Transport"]
 
@@ -33,7 +34,38 @@ class Plan(BaseModel):
 def structure_plan(markdown: str) -> Plan:
     llm = load_model().with_structured_output(Plan)
     return llm.invoke(
-        "Convert this travel plan into the requested structure. Use only information present in it, "
-        "keep it faithful, and keep each description short. "
+        "Convert this travel plan into the requested structure. Use only information present in it "
+        "and keep it faithful: keep named places, prices, entry fees and timings. "
+        "If it offers several plans (e.g. tourist and off-beat), produce one itinerary covering the "
+        "trip's number of days: the main plan with its best off-beat stops woven in, never repeating a day. "
+        "Include each day's stops in order, with the named hotel and restaurants as Hotel and Food entries. "
         'Set rating to "-" unless the plan itself states one.\n\n' + markdown
     )
+
+
+def _find_image(title: str, images: dict[str, str]) -> str | None:
+    by_name = {name.casefold(): url for name, url in images.items()}
+    title = title.casefold()
+    for name, url in by_name.items():
+        if name in title or title in name:
+            return url
+    close = get_close_matches(title, by_name, n=1, cutoff=0.8)  # "Amer Fort" vs "Amber Fort"
+    return by_name[close[0]] if close else None
+
+
+def attach_images(plan: Plan, images: dict[str, str]) -> dict:
+    """Plan as JSON with photo URLs from the search results.
+
+    Added after the LLM step on purpose: it would invent URLs. Stops with no photo of their own
+    (hotels, "Arrive at airport") get the hero, so every card shows the destination.
+    """
+    data = plan.model_dump()
+    activities = [a for day in data["days"] for a in day["activities"]]
+    for a in activities:
+        a["imageUrl"] = _find_image(a["title"], images)
+    hero = next((a["imageUrl"] for a in activities if a["imageUrl"] and a["type"] == "Sightseeing"), None)
+    hero = hero or next(iter(images.values()), None)
+    for a in activities:
+        a["imageUrl"] = a["imageUrl"] or hero
+    data["heroImageUrl"] = hero
+    return data

@@ -30,8 +30,9 @@ private enum class ImageStatus { Loading, Success, Error }
 
 /**
  * The single place images are loaded. [model] is anything Coil accepts (URL string,
- * Uri, @DrawableRes Int, ...). While [model] is null or still loading, a shimmer
- * placeholder is shown, which cross-fades into the image when it is ready.
+ * Uri, @DrawableRes Int, ...). While [model] is loading, a shimmer placeholder is shown,
+ * which cross-fades into the image when it is ready. A null [model] means "no image",
+ * so it shows the same static placeholder as a failed load rather than shimmering forever.
  *
  * Clip it from the call site: `AppImage(..., Modifier.clip(shape))`.
  */
@@ -43,7 +44,7 @@ fun AppImage(
     contentScale: ContentScale = ContentScale.Crop,
     showPlaceholder: Boolean = true,
 ) {
-    var status by remember(model) { mutableStateOf(ImageStatus.Loading) }
+    var status by remember(model) { mutableStateOf(if (model == null) ImageStatus.Error else ImageStatus.Loading) }
     val imageAlpha by animateFloatAsState(
         targetValue = if (status == ImageStatus.Success) 1f else 0f,
         animationSpec = tween(450),

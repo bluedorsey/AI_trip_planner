@@ -2,6 +2,7 @@
 
 No network. Fixtures below are trimmed from real SerpAPI responses for Jaipur.
 """
+from app.plan import Activity, Day, Plan, attach_images
 from app.utils.place_into_search import SerpAPI_tool
 
 
@@ -50,6 +51,34 @@ def test_organic_fallback_unescapes():
 def test_empty_response():
     assert SerpAPI_tool._parse_places({}) == [], "missing local_results must not raise"
     assert "No results" in SerpAPI_tool._fallback({}, "q")
+
+
+def test_images_collected_and_upsized():
+    raw = {"top_sights": {"sights": [
+        {"title": "Hawa Mahal", "thumbnail": "https://lh3.googleusercontent.com/grass-cs/abc=s148-w148-h148-n-k-no"},
+        {"title": "No Photo"},
+    ]}, "local_results": {"places": [
+        {"title": "Handi Restaurant", "thumbnail": "https://serpapi.com/searches/1/images/x.jpeg"},
+    ]}}
+    assert SerpAPI_tool._images(raw) == {
+        "Hawa Mahal": "https://lh3.googleusercontent.com/grass-cs/abc=w800",
+        "Handi Restaurant": "https://serpapi.com/searches/1/images/x.jpeg",
+    }
+
+
+def test_attach_images():
+    """Real matches win, and stops with no photo get the hero rather than an empty card."""
+    def stop(title, type="Sightseeing"):
+        return Activity(title=title, description="d", location="l", type=type)
+    plan = Plan(title="T", location="L", dateRange="D", budget="B", duration="1 day", rating="-", days=[
+        Day(dayNumber=1, date="Day 1", theme="t", activities=[
+            stop("Lunch at Handi Restaurant", "Food"), stop("Amer Fort"), stop("Arrive at airport", "Transport"),
+        ]),
+    ])
+    out = attach_images(plan, {"Handi Restaurant": "food.jpg", "Amber Fort": "fort.jpg"})
+    assert out["heroImageUrl"] == "fort.jpg", "hero should be a sight, not the first thumbnail seen"
+    assert [a["imageUrl"] for a in out["days"][0]["activities"]] == ["food.jpg", "fort.jpg", "fort.jpg"]
+    assert attach_images(plan, {})["heroImageUrl"] is None, "no search results must not raise"
 
 
 if __name__ == "__main__":

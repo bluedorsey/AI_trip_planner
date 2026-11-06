@@ -100,5 +100,20 @@ class PlaceSearchTool:
                 except:
                     activity_result = self.tavily_search.tavily_activity_place(place)
                     return f"Following are the best activity options in {place} suggested by tavily: {activity_result}"
-        return [attraction_places_tool, resturant_place_tool, street_food_tool, Hotel_place_tool, activity_place_tool]
+
+        @tool
+        def transport_tool(place:str)->str:
+            """
+            Find metro stations, railway stations, bus stands and airports in and around the given location.
+            Args:
+                place (str): The location for which to find transport options.
+            Returns:
+                str: The transport options.
+            """
+            try:
+                return f"Following are the transport options in {place} suggested by google: {self.serpapi_search.serp_transport(place)}"
+            except Exception:
+                return f"Following are the transport options in {place} suggested by tavily: {self.tavily_search.tavily_transport(place)}"
+
+        return [attraction_places_tool, resturant_place_tool, street_food_tool, Hotel_place_tool, activity_place_tool, transport_tool]
         

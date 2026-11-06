@@ -1,3 +1,6 @@
+from datetime import date
+
+from langchain_core.messages import SystemMessage
 from langgraph.graph import END, START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
@@ -40,7 +43,8 @@ class GraphBuilder:
 
 
     def agentic_function(self, state: MessagesState):
-        messages = [self.system_prompt, *state["messages"]]
+        system = SystemMessage(f"{self.system_prompt.content}\nToday's date: {date.today():%B %d, %Y}.")
+        messages = [system, *state["messages"]]
         response = self.llm_with_tools.invoke(messages)
         return {"messages": [response]}
 

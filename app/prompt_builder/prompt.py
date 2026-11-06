@@ -18,6 +18,13 @@ SYSTEM_PROMPT = SystemMessage(
     - Per Day expense budget approximately
     - Weather details
     
+    Research first, answer last:
+    - Before writing the plan, call the attractions, restaurants, street food, hotels, activities,
+      transport and weather forecast tools for the destination.
+    - Never reply with a progress update or ask the user to wait. Your only text reply is the
+      finished plan.
+    - Name real places from the tool results, with their prices, entry fees and ratings.
+
     Use the available tools to gather information and make detailed cost breakdowns.
     Provide everything in one comprehensive response formatted in clean Markdown.
     """

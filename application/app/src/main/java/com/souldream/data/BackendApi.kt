@@ -40,6 +40,9 @@ object BackendApi {
     }
 }
 
+// optString would turn a JSON null into the text "null", which Coil then tries to load.
+private fun JSONObject.stringOrNull(key: String) = if (isNull(key)) null else getString(key)
+
 internal fun parsePlan(json: JSONObject): TripPlan {
     val days = json.getJSONArray("days")
     return TripPlan(
@@ -50,6 +53,7 @@ internal fun parsePlan(json: JSONObject): TripPlan {
         budget = json.optString("budget"),
         duration = json.optString("duration"),
         rating = json.optString("rating", "-"),
+        heroImageUrl = json.stringOrNull("heroImageUrl"),
         days = List(days.length()) { i ->
             val d = days.getJSONObject(i)
             val acts = d.getJSONArray("activities")
@@ -67,6 +71,7 @@ internal fun parsePlan(json: JSONObject): TripPlan {
                         description = a.optString("description"),
                         location = a.optString("location"),
                         type = ActivityType.entries.firstOrNull { it.name == a.optString("type") } ?: ActivityType.Activity,
+                        imageUrl = a.stringOrNull("imageUrl"),
                     )
                 },
             )
