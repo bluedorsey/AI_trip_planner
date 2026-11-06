@@ -1,15 +1,9 @@
 package com.souldream.ui.screens.tripplan.components
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -22,9 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Bookmark
-import androidx.compose.material.icons.rounded.BookmarkBorder
 import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,16 +43,11 @@ import com.souldream.ui.theme.selected_slider
 
 private const val CellCount = 3
 
-/**
- * Itinerary | Map | Save. The first two are tabs sharing a sliding, springy
- * highlight; "Save" is a toggle whose bookmark pops when it flips.
- */
+/** Itinerary | Details | Map, sharing a sliding, springy highlight. */
 @Composable
 fun TripTabBar(
     selected: TripTab,
     onSelect: (TripTab) -> Unit,
-    isSaved: Boolean,
-    onToggleSave: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(30.dp)
@@ -95,12 +83,17 @@ fun TripTabBar(
             onClick = { onSelect(TripTab.Itinerary) },
         )
         TabCell(
+            icon = Icons.Rounded.Info,
+            label = stringResource(R.string.trip_tab_details),
+            selected = selected == TripTab.Details,
+            onClick = { onSelect(TripTab.Details) },
+        )
+        TabCell(
             icon = Icons.Rounded.LocationOn,
             label = stringResource(R.string.trip_tab_map),
             selected = selected == TripTab.Map,
             onClick = { onSelect(TripTab.Map) },
         )
-        SaveCell(isSaved = isSaved, onClick = onToggleSave)
     }
 }
 
@@ -119,38 +112,6 @@ private fun RowScope.TabCell(
         Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
         Spacer(Modifier.width(8.dp))
         Text(label, style = MaterialTheme.typography.labelLarge, color = tint, maxLines = 1)
-    }
-}
-
-@Composable
-private fun RowScope.SaveCell(isSaved: Boolean, onClick: () -> Unit) {
-    val tint by animateColorAsState(
-        targetValue = if (isSaved) selected_icon else MaterialTheme.colorScheme.onSurfaceVariant,
-        label = "saveTint",
-    )
-    CellContent(onClick = onClick) {
-        AnimatedContent(
-            targetState = isSaved,
-            transitionSpec = {
-                (scaleIn(spring(Spring.DampingRatioMediumBouncy)) + fadeIn()) togetherWith
-                    (scaleOut() + fadeOut())
-            },
-            label = "bookmark",
-        ) { saved ->
-            Icon(
-                imageVector = if (saved) Icons.Rounded.Bookmark else Icons.Rounded.BookmarkBorder,
-                contentDescription = null,
-                tint = tint,
-                modifier = Modifier.size(22.dp),
-            )
-        }
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = stringResource(if (isSaved) R.string.trip_tab_saved else R.string.trip_tab_save),
-            style = MaterialTheme.typography.labelLarge,
-            color = tint,
-            maxLines = 1,
-        )
     }
 }
 

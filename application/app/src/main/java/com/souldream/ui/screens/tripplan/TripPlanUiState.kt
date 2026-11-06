@@ -23,4 +23,4 @@ data class TripPlanActions(
     val onActivityClick: (TripActivity) -> Unit = {},
 )
 
-enum class TripTab { Itinerary, Map }
+enum class TripTab { Itinerary, Details, Map }

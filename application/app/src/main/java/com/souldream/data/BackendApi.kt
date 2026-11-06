@@ -3,6 +3,7 @@ package com.souldream.data
 import com.google.firebase.auth.FirebaseAuth
 import com.souldream.BuildConfig
 import com.souldream.model.ActivityType
+import com.souldream.model.CostItem
 import com.souldream.model.TripActivity
 import com.souldream.model.TripDay
 import com.souldream.model.TripPlan
@@ -54,6 +55,15 @@ internal fun parsePlan(json: JSONObject): TripPlan {
         duration = json.optString("duration"),
         rating = json.optString("rating", "-"),
         heroImageUrl = json.stringOrNull("heroImageUrl"),
+        perDayBudget = json.optString("perDayBudget"),
+        costBreakdown = json.optJSONArray("costBreakdown")?.let { costs ->
+            List(costs.length()) { i ->
+                val c = costs.getJSONObject(i)
+                CostItem(c.optString("label"), c.optString("amount"))
+            }
+        }.orEmpty(),
+        weather = json.optString("weather"),
+        transport = json.optString("transport"),
         days = List(days.length()) { i ->
             val d = days.getJSONObject(i)
             val acts = d.getJSONArray("activities")

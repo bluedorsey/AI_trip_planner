@@ -48,6 +48,8 @@ import com.souldream.ui.screens.tripplan.components.DayTimelineItem
 import com.souldream.ui.screens.tripplan.components.DayTimelineItemSkeleton
 import com.souldream.ui.screens.tripplan.components.MapPlaceholder
 import com.souldream.ui.screens.tripplan.components.SaveTripButton
+import com.souldream.ui.screens.tripplan.components.TripDetails
+import com.souldream.ui.screens.tripplan.components.TripDetailsSkeleton
 import com.souldream.ui.screens.tripplan.components.TripHeader
 import com.souldream.ui.screens.tripplan.components.TripStatsCard
 import com.souldream.ui.screens.tripplan.components.TripTabBar
@@ -126,8 +128,6 @@ fun TripPlanScreen(
                     TripTabBar(
                         selected = tab,
                         onSelect = { tab = it },
-                        isSaved = isSaved,
-                        onToggleSave = toggleSave,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .staggeredEntrance(index = 5),
@@ -152,6 +152,12 @@ fun TripPlanScreen(
                                 days = state.plan.map { it.days },
                                 onActivityClick = actions.onActivityClick,
                             )
+
+                            TripTab.Details -> AsyncContent(
+                                state = state.plan,
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 24.dp),
+                                loading = { TripDetailsSkeleton() },
+                            ) { TripDetails(it) }
 
                             TripTab.Map -> Box(Modifier.padding(horizontal = 16.dp, vertical = 24.dp)) {
                                 mapContent()

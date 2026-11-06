@@ -6,6 +6,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.souldream.model.ActivityType
+import com.souldream.model.CostItem
 import com.souldream.model.Destination
 import com.souldream.model.TripActivity
 import com.souldream.model.TripDay
@@ -72,6 +73,11 @@ private fun TripPlan.toMap(query: String): Map<String, Any> = buildMap {
     put("duration", duration)
     put("rating", rating)
     heroImageUrl?.let { put("heroImageUrl", it) }
+    // Trimmed to the limits in firestore.rules: one wordy LLM answer must not fail the whole save.
+    put("perDayBudget", perDayBudget.take(200))
+    put("costBreakdown", costBreakdown.take(30).map { mapOf("label" to it.label, "amount" to it.amount) })
+    put("weather", weather.take(3000))
+    put("transport", transport.take(3000))
     put("query", query.take(500))
     put("saved", false)
     put("createdAt", FieldValue.serverTimestamp())
@@ -128,6 +134,12 @@ private fun DocumentSnapshot.toStoredTrip(): StoredTrip? {
         rating = getString("rating") ?: "-",
         days = days,
         heroImageUrl = getString("heroImageUrl"),
+        perDayBudget = getString("perDayBudget").orEmpty(),
+        costBreakdown = (get("costBreakdown") as? List<Map<String, Any?>>).orEmpty().map {
+            CostItem(it["label"] as? String ?: "", it["amount"] as? String ?: "")
+        },
+        weather = getString("weather").orEmpty(),
+        transport = getString("transport").orEmpty(),
     )
     return StoredTrip(plan, saved = getBoolean("saved") ?: false)
 }

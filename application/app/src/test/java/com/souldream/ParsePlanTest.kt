@@ -43,6 +43,21 @@ class ParsePlanTest {
     }
 
     @Test
+    fun readsTripDetails() {
+        val plan = parsePlan(
+            JSONObject(
+                """{"title":"T","days":[],"perDayBudget":"Rs 6,000","weather":"Sunny","transport":"Metro",
+                "costBreakdown":[{"label":"Hotel","amount":"Rs 8,000"}]}""",
+            ),
+        )
+        assertEquals("Rs 6,000", plan.perDayBudget)
+        assertEquals("Sunny", plan.weather)
+        assertEquals("Metro", plan.transport)
+        assertEquals("Rs 8,000", plan.costBreakdown.single().amount)
+        assertEquals(0, parsePlan(JSONObject("""{"title":"T","days":[]}""")).costBreakdown.size)
+    }
+
+    @Test
     fun missingOptionalFieldsDoNotCrash() {
         val plan = parsePlan(JSONObject("""{"title":"T","days":[]}"""))
         assertEquals("-", plan.rating.ifEmpty { "-" })

@@ -21,6 +21,11 @@ class Day(BaseModel):
     activities: list[Activity]
 
 
+class CostItem(BaseModel):
+    label: str = Field(description='e.g. "Hotel (2 nights)".')
+    amount: str = Field(description='With currency, e.g. "₹8,000".')
+
+
 class Plan(BaseModel):
     title: str
     location: str
@@ -28,6 +33,10 @@ class Plan(BaseModel):
     budget: str = Field(description='Total estimated cost with currency, e.g. "₹45,000".')
     duration: str = Field(description='e.g. "5 days".')
     rating: str = Field(description='Traveller rating out of 5 as text, e.g. "4.6"; "-" if unknown.')
+    perDayBudget: str = Field(description='e.g. "₹12,000 per day"; empty if the plan gives none.')
+    costBreakdown: list[CostItem] = Field(description="Each cost line from the plan's breakdown.")
+    weather: str = Field(description="The expected weather in one to three sentences; empty if the plan gives none.")
+    transport: str = Field(description="How to get there and around, with costs, in one to four sentences; empty if the plan gives none.")
     days: list[Day]
 
 

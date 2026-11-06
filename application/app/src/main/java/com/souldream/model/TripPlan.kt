@@ -22,6 +22,8 @@ data class TripDay(
     val activities: List<TripActivity>,
 )
 
+data class CostItem(val label: String, val amount: String)
+
 /**
  * A full trip plan. Display strings (budget, duration, rating, date range) are
  * expected to be pre-formatted so the UI stays free of formatting/locale logic.
@@ -36,4 +38,8 @@ data class TripPlan(
     val rating: String,
     val days: List<TripDay>,
     val heroImageUrl: String? = null,
+    val perDayBudget: String = "",
+    val costBreakdown: List<CostItem> = emptyList(),
+    val weather: String = "",
+    val transport: String = "",
 )

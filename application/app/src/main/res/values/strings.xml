@@ -59,9 +59,13 @@
     <string name="trip_stat_duration">Trip Duration</string>
     <string name="trip_stat_rating">Overall Rating</string>
     <string name="trip_tab_itinerary">Itinerary</string>
+    <string name="trip_tab_details">Details</string>
     <string name="trip_tab_map">Map</string>
-    <string name="trip_tab_save">Save</string>
-    <string name="trip_tab_saved">Saved</string>
+    <string name="trip_details_costs">Cost breakdown</string>
+    <string name="trip_details_per_day">Per day</string>
+    <string name="trip_details_weather">Weather</string>
+    <string name="trip_details_transport">Getting around</string>
+    <string name="trip_empty_details">No extra details for this trip. Plan a new one to see costs, weather and transport.</string>
     <string name="trip_day_header">Day %1$d • %2$s</string>
     <string name="trip_save_plan">Save Trip Plan</string>
     <string name="trip_saved">Saved</string>

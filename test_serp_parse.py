@@ -70,7 +70,8 @@ def test_attach_images():
     """Real matches win, and stops with no photo get the hero rather than an empty card."""
     def stop(title, type="Sightseeing"):
         return Activity(title=title, description="d", location="l", type=type)
-    plan = Plan(title="T", location="L", dateRange="D", budget="B", duration="1 day", rating="-", days=[
+    plan = Plan(title="T", location="L", dateRange="D", budget="B", duration="1 day", rating="-",
+                perDayBudget="", costBreakdown=[], weather="", transport="", days=[
         Day(dayNumber=1, date="Day 1", theme="t", activities=[
             stop("Lunch at Handi Restaurant", "Food"), stop("Amer Fort"), stop("Arrive at airport", "Transport"),
         ]),
