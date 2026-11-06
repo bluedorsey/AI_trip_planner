@@ -2,7 +2,7 @@
 
 No network. Fixtures below are trimmed from real SerpAPI responses for Jaipur.
 """
-from app.plan import Activity, Day, Plan, attach_images
+from app.plan import Activity, Day, _json_lines, _with_images
 from app.utils.place_into_search import SerpAPI_tool
 
 
@@ -66,20 +66,26 @@ def test_images_collected_and_upsized():
     }
 
 
-def test_attach_images():
+def test_day_images():
     """Real matches win, and stops with no photo get the hero rather than an empty card."""
     def stop(title, type="Sightseeing"):
         return Activity(title=title, description="d", location="l", type=type)
-    plan = Plan(title="T", location="L", dateRange="D", budget="B", duration="1 day", rating="-",
-                perDayBudget="", costBreakdown=[], weather="", transport="", days=[
-        Day(dayNumber=1, date="Day 1", theme="t", activities=[
-            stop("Lunch at Handi Restaurant", "Food"), stop("Amer Fort"), stop("Arrive at airport", "Transport"),
-        ]),
+    day = Day(dayNumber=1, date="Day 1", theme="t", activities=[
+        stop("Lunch at Handi Restaurant", "Food"), stop("Amer Fort"), stop("Arrive at airport", "Transport"),
     ])
-    out = attach_images(plan, {"Handi Restaurant": "food.jpg", "Amber Fort": "fort.jpg"})
-    assert out["heroImageUrl"] == "fort.jpg", "hero should be a sight, not the first thumbnail seen"
-    assert [a["imageUrl"] for a in out["days"][0]["activities"]] == ["food.jpg", "fort.jpg", "fort.jpg"]
-    assert attach_images(plan, {})["heroImageUrl"] is None, "no search results must not raise"
+    out = _with_images(day, {"Handi Restaurant": "food.jpg", "Amber Fort": "fort.jpg"}, "hero.jpg")
+    assert [a["imageUrl"] for a in out["activities"]] == ["food.jpg", "fort.jpg", "hero.jpg"]
+    assert _with_images(day, {}, None)["activities"][0]["imageUrl"] is None, "no search results must not raise"
+
+
+def test_json_lines():
+    """Chunks split mid-line; fences and chatter are skipped; a trailing line without newline counts."""
+    class Chunk:
+        def __init__(self, content): self.content = content
+    nl = chr(10)
+    chunks = [Chunk('```json' + nl + '{"title": "T"'), Chunk('}' + nl + 'not json' + nl + '{"dayNu'),
+              Chunk([{"type": "text", "text": 'mber": 1}'}])]
+    assert list(_json_lines(chunks)) == [{"title": "T"}, {"dayNumber": 1}]
 
 
 if __name__ == "__main__":

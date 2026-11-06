@@ -1,55 +1,92 @@
-"""Structured trip plan: turns the agent's Markdown answer into JSON the Android app can render."""
+"""Trip plan for the Android app: research with the tool agent, then stream the plan as JSON lines
+(summary first, then one line per day) so the app can show it while it is still being written."""
+import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import date
 from difflib import get_close_matches
-from typing import Literal
+from typing import Iterator, Literal
 
-from pydantic import BaseModel, Field
+from langchain_core.messages import HumanMessage, SystemMessage
+from pydantic import BaseModel, ConfigDict, ValidationError
 
+from app.prompt_builder.prompt import WRITER_PROMPT
+from app.tools.place_search_tool import PlaceSearchTool
+from app.tools.weather_info_tools import WeatherInfoTool
 from app.utils.model_loader import load_model
 
 
-class Activity(BaseModel):
-    title: str = Field(description='The place\'s exact name, e.g. "Hawa Mahal", not "Visit Hawa Mahal".')
-    description: str = Field(description="One or two sentences with concrete details: what to do, timing, entry fee or price.")
+class _Model(BaseModel):
+    model_config = ConfigDict(coerce_numbers_to_str=True)  # models sometimes write 35000 instead of "35000"
+
+
+class Activity(_Model):
+    title: str
+    description: str
     location: str
     type: Literal["Hotel", "Activity", "Sightseeing", "Food", "Transport"]
 
 
-class Day(BaseModel):
+class Day(_Model):
     dayNumber: int
-    date: str = Field(description='Short label such as "Day 1" or "Dec 20, Sat".')
-    theme: str = Field(description='Short theme of the day, e.g. "Arrival & Relax".')
+    date: str
+    theme: str
     activities: list[Activity]
 
 
-class CostItem(BaseModel):
-    label: str = Field(description='e.g. "Hotel (2 nights)".')
-    amount: str = Field(description='With currency, e.g. "₹8,000".')
+class CostItem(_Model):
+    label: str
+    amount: str
 
 
-class Plan(BaseModel):
+class Meta(_Model):
     title: str
     location: str
-    dateRange: str = Field(description='e.g. "Dec 20 - Dec 25"; use "Flexible dates" if none was given.')
-    budget: str = Field(description='Total estimated cost with currency, e.g. "₹45,000".')
-    duration: str = Field(description='e.g. "5 days".')
-    rating: str = Field(description='Traveller rating out of 5 as text, e.g. "4.6"; "-" if unknown.')
-    perDayBudget: str = Field(description='e.g. "₹12,000 per day"; empty if the plan gives none.')
-    costBreakdown: list[CostItem] = Field(description="Each cost line from the plan's breakdown.")
-    weather: str = Field(description="The expected weather in one to three sentences; empty if the plan gives none.")
-    transport: str = Field(description="How to get there and around, with costs, in one to four sentences; empty if the plan gives none.")
-    days: list[Day]
+    dateRange: str = "Flexible dates"
+    budget: str = "-"
+    duration: str = ""
+    rating: str = "-"
+    perDayBudget: str = ""
+    costBreakdown: list[CostItem] = []
+    weather: str = ""
+    transport: str = ""
 
 
-def structure_plan(markdown: str) -> Plan:
-    llm = load_model().with_structured_output(Plan)
-    return llm.invoke(
-        "Convert this travel plan into the requested structure. Use only information present in it "
-        "and keep it faithful: keep named places, prices, entry fees and timings. "
-        "If it offers several plans (e.g. tourist and off-beat), produce one itinerary covering the "
-        "trip's number of days: the main plan with its best off-beat stops woven in, never repeating a day. "
-        "Include each day's stops in order, with the named hotel and restaurants as Hotel and Food entries. "
-        'Set rating to "-" unless the plan itself states one.\n\n' + markdown
-    )
+# Research tools to run, and what the app shows when each one finishes.
+STATUS = {
+    "get_weather_forecast": "Checked the weather",
+    "attraction_places_tool": "Found top attractions",
+    "resturant_place_tool": "Found restaurants",
+    "street_food_tool": "Found street food",
+    "Hotel_place_tool": "Compared hotels",
+    "activity_place_tool": "Found activities",
+    "transport_tool": "Checked transport",
+}
+
+
+def message_text(content) -> str:
+    """Gemini returns a list of content blocks, Groq a string."""
+    if isinstance(content, str):
+        return content
+    return "".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in content)
+
+
+def _loads(line: str) -> dict | None:
+    try:
+        obj = json.loads(line.strip())
+    except ValueError:  # blank lines, code fences, chatter
+        return None
+    return obj if isinstance(obj, dict) else None
+
+
+def _json_lines(chunks) -> Iterator[dict]:
+    """Streamed text chunks -> one dict per complete JSON line."""
+    buf = ""
+    for chunk in chunks:
+        buf += message_text(chunk.content)
+        *lines, buf = buf.split("\n")
+        yield from filter(None, map(_loads, lines))
+    if obj := _loads(buf):
+        yield obj
 
 
 def _find_image(title: str, images: dict[str, str]) -> str | None:
@@ -62,19 +99,63 @@ def _find_image(title: str, images: dict[str, str]) -> str | None:
     return by_name[close[0]] if close else None
 
 
-def attach_images(plan: Plan, images: dict[str, str]) -> dict:
-    """Plan as JSON with photo URLs from the search results.
-
-    Added after the LLM step on purpose: it would invent URLs. Stops with no photo of their own
-    (hotels, "Arrive at airport") get the hero, so every card shows the destination.
-    """
-    data = plan.model_dump()
-    activities = [a for day in data["days"] for a in day["activities"]]
-    for a in activities:
-        a["imageUrl"] = _find_image(a["title"], images)
-    hero = next((a["imageUrl"] for a in activities if a["imageUrl"] and a["type"] == "Sightseeing"), None)
-    hero = hero or next(iter(images.values()), None)
-    for a in activities:
-        a["imageUrl"] = a["imageUrl"] or hero
-    data["heroImageUrl"] = hero
+def _with_images(day: Day, images: dict[str, str], hero: str | None) -> dict:
+    """Day as JSON with photo URLs from the search results. Added here, never by the LLM, which
+    would invent URLs. Stops with no photo of their own (hotels, "Arrive at airport") get the hero."""
+    data = day.model_dump()
+    for a in data["activities"]:
+        a["imageUrl"] = _find_image(a["title"], images) or hero
     return data
+
+
+def _destination(query: str) -> str:
+    reply = load_model().invoke(
+        "Reply with only the destination (a place name, no other words) of this trip request:\n" + query
+    )
+    lines = message_text(reply.content).strip().strip('."\'').splitlines()
+    return lines[0] if lines else query
+
+
+def stream_plan(query: str) -> Iterator[dict]:
+    """Events: status*, meta, day*, then done (or error). Every search runs in parallel, then one
+    streamed model call writes the plan from the notes. No agent loop: the searches are always the
+    same, and a model deciding to call them one per turn cost a model round trip each."""
+    yield {"type": "status", "text": "Understanding your request"}
+    place = _destination(query)
+    yield {"type": "status", "text": f"Researching {place}"}
+
+    places = PlaceSearchTool()
+    search = places.serpapi_search
+    tools = {t.name: t for t in [*places.tools_list, *WeatherInfoTool().weather_tools_list] if t.name in STATUS}
+    notes = []
+    with ThreadPoolExecutor(len(tools)) as pool:
+        # each tool takes one argument (place or city), whatever it is called
+        futures = {pool.submit(t.invoke, {next(iter(t.args)): place}): name for name, t in tools.items()}
+        for done in as_completed(futures):
+            try:
+                notes.append(str(done.result()))
+            except Exception:
+                continue  # one failed search should not sink the trip
+            yield {"type": "status", "text": STATUS[futures[done]]}
+
+    yield {"type": "status", "text": "Writing your itinerary"}
+    hero = search.hero or next(iter(search.images.values()), None)
+    prompt = [
+        SystemMessage(f"{WRITER_PROMPT}\nToday's date: {date.today():%B %d, %Y}."),
+        HumanMessage(f"Request: {query}\n\nResearch notes:\n" + "\n\n".join(notes)),
+    ]
+    for _ in range(2):  # a model can ramble instead of writing the lines; one retry, then a clean error
+        days = 0
+        for obj in _json_lines(load_model().stream(prompt)):
+            try:
+                if "dayNumber" in obj:
+                    yield {"type": "day", **_with_images(Day(**obj), search.images, hero)}
+                    days += 1
+                elif "title" in obj:
+                    yield {"type": "meta", **Meta(**obj).model_dump(), "heroImageUrl": hero}
+            except ValidationError:
+                continue  # drop one bad line rather than the whole trip
+        if days:
+            yield {"type": "done"}
+            return
+    yield {"type": "error", "message": "The model returned no itinerary"}

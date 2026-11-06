@@ -341,6 +341,7 @@ class SerpAPI_tool:
         self.country = country  # gl= biases results to the traveler's market
         self.client = serpapi.Client(api_key=api_key)
         self.images = {}  # place name -> photo URL seen this run; never put in the LLM's text
+        self.hero = None  # the first top sight's photo: the destination's headline image
 
     #  internals
     def _search(self, query: str) -> str:
@@ -353,7 +354,10 @@ class SerpAPI_tool:
         })
         if raw.get("error"):
             return f"No results for '{query}' ({raw['error']})."
-        self.images.update(self._images(raw))
+        found = self._images(raw)
+        self.images.update(found)
+        if not self.hero and (raw.get("top_sights") or {}).get("sights"):
+            self.hero = next(iter(found.values()), None)
         places = self._parse_places(raw)
         return self._format(places) if places else self._fallback(raw, query)
 

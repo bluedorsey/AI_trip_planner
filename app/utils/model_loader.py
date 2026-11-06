@@ -10,8 +10,9 @@ load_dotenv()
 
 # provider -> (API-key env var, chat model class, client options).
 _PROVIDERS = {
-    # Gemini's 503 "high demand" clears in seconds; retrying (~7s at most) keeps the best model answering.
-    "google": ("GEMINI_API_KEY", ChatGoogleGenerativeAI, {"max_retries": 4}),
+    # A 503 "high demand" often clears on one retry, but a 429 quota error never does, and the client
+    # retries both: 4 attempts burned ~10s per call before falling back. Keep it short.
+    "google": ("GEMINI_API_KEY", ChatGoogleGenerativeAI, {"max_retries": 2}),
     # Fail fast: Groq's backoff sleeps through a long 429. Its default output cap (3072) truncates plans.
     "groq": ("GROQ_API_KEY", ChatGroq, {"max_retries": 0, "max_tokens": 8000}),
 }
